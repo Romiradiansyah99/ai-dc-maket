@@ -165,10 +165,8 @@ export class Nav {
         const [a, b] = [...this._pointers.values()];
         this._pinch = Math.hypot(a.x - b.x, a.y - b.y);
         this._mode = 'pinch';
-      } else if (e.button === 2 || e.shiftKey || e.ctrlKey || e.altKey) {
+      } else if (e.button === 1 || e.button === 2 || e.shiftKey || e.ctrlKey) {
         this._mode = 'pan';
-      } else if (e.button === 1) {
-        this._mode = 'orbit';
       } else {
         this._mode = e.pointerType === 'touch' ? 'orbit' : 'orbit';
       }

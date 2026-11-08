@@ -6,7 +6,9 @@ import { FlowLayer } from './scene/flow.js';
 import { Tree, Panel, Walk } from './ui.js';
 import { buildCableLayer } from './scene/cables.js';
 import { CABLE_BY_ID } from './data/cables.js';
-import { LEVELS, ROOMS, BUILDING } from './data/layout.js';
+import { buildPipeLayer } from './scene/pipes.js';
+import { PIPE_BY_ID } from './data/pipes.js';
+import { LEVELS, ROOMS, BUILDING, RISERS } from './data/layout.js';
 import { EQUIPMENT, INDEX, FLOWS, SYS_COLOR, SYSTEMS } from './data/systems.js';
 
 /* ---------------- renderer ---------------- */
@@ -61,6 +63,10 @@ scene.add(site.root);
 const cables = buildCableLayer(site);
 scene.add(cables.root);
 
+// Piping is built from the pipe schedule against the same equipment anchors.
+const pipes = buildPipeLayer(site);
+scene.add(pipes.root);
+
 // The structure is context, not content: fade it so the electrical layer reads clearly.
 for (const g of Object.values(site.shell.groups)) {
   g.traverse((o) => {
@@ -85,6 +91,7 @@ const state = {
   roof: false,
   paper: true,
   cables: true,
+  pipes: true,
   structure: true,
   selected: null,
   hovered: null
@@ -127,6 +134,18 @@ for (const y of [
   yardLabels.push(o);
 }
 
+// Shaft labels: a riser is useless if nobody can find the shaft.
+const shaftLabels = [];
+for (const r of RISERS) {
+  const d = document.createElement('div');
+  d.className = 'lbl lbl-shaft';
+  d.textContent = r.name;
+  const o = new CSS2DObject(d);
+  o.position.set(r.x, LEVELS[1].y + 1.1, r.z);
+  scene.add(o);
+  shaftLabels.push(o);
+}
+
 const focusLabel = document.createElement('div');
 focusLabel.className = 'lbl lbl-eq';
 const focusObj = new CSS2DObject(focusLabel);
@@ -145,11 +164,12 @@ function pickAt(clientX, clientY) {
   raycaster.setFromCamera(ndc, camera);
   const targets = site.pickRoots.slice();
   if (cables.root.visible) targets.push(cables.root);
+  if (pipes.root.visible) targets.push(pipes.root);
   const hits = raycaster.intersectObjects(targets, true);
   for (const h of hits) {
     if (!h.object.visible) continue;
     let o = h.object;
-    while (o && !(o.userData && (o.userData.key || o.userData.cableId))) o = o.parent;
+    while (o && !(o.userData && (o.userData.key || o.userData.cableId || o.userData.pipeId))) o = o.parent;
     if (o && o.visible) return o;
   }
   return null;
@@ -161,7 +181,9 @@ nav.onHover = (e) => {
     canvas.style.cursor = 'pointer';
     tooltip.textContent = obj.userData.cableId
       ? obj.userData.cableId + '  ' + (CABLE_BY_ID[obj.userData.cableId] || {}).conductor
-      : obj.userData.tag + '  ' + obj.userData.name;
+      : obj.userData.pipeId
+        ? obj.userData.pipeId + '  DN' + (PIPE_BY_ID[obj.userData.pipeId] || {}).dn
+        : obj.userData.tag + '  ' + obj.userData.name;
     tooltip.style.transform = `translate(${e.clientX + 14}px, ${e.clientY + 10}px)`;
     tooltip.classList.add('on');
   } else {
@@ -173,9 +195,24 @@ nav.onHover = (e) => {
 nav.onPick = (e) => {
   const obj = pickAt(e.clientX, e.clientY);
   if (obj && obj.userData.cableId) selectCable(obj.userData.cableId);
+  else if (obj && obj.userData.pipeId) selectPipe(obj.userData.pipeId);
   else if (obj) select(obj.userData.key, obj);
   else deselect();
 };
+
+function selectPipe(id) {
+  const p = pipes.byId[id];
+  if (!p) return;
+  state.selected = 'pipe:' + id;
+  tree.setActive(null);
+  panel.showPipe(p.def, p.length);
+  document.body.classList.add('has-selection');
+  const mid = p.points[Math.floor(p.points.length / 2)];
+  focusLabel.textContent = id;
+  focusObj.position.copy(mid).add(new THREE.Vector3(0, 0.6, 0));
+  focusObj.visible = true;
+  flyTo(mid.clone(), Math.max(nav.zoom, 1.1));
+}
 
 function selectCable(id) {
   const c = cables.byId[id];
@@ -261,6 +298,7 @@ function applyDisplay() {
   }
   // cables span floors, so they are only honest when the whole site is shown
   cables.root.visible = state.cables && lvl === 'ALL' && !state.exploded;
+  pipes.root.visible = state.pipes && lvl === 'ALL' && !state.exploded;
   site.shell.roof.visible = state.roof && (lvl === 'ALL' || lvl === 'L2');
   const risers = site.root.getObjectByName('risers');
   if (risers) risers.visible = lvl === 'ALL' && !state.exploded;
@@ -269,6 +307,8 @@ function applyDisplay() {
     o.visible = lvl !== 'ALL' && o.userData.level === lvl;
   });
   yardLabels.forEach((o) => { o.visible = lvl === 'L0'; });
+  const risersGroup = site.root.getObjectByName('risers');
+  shaftLabels.forEach((o) => { o.visible = !!risersGroup && risersGroup.visible; });
   document.querySelectorAll('#levels button').forEach((b) => {
     b.classList.toggle('on', b.dataset.level === lvl);
   });
@@ -295,7 +335,8 @@ const tree = new Tree(document.getElementById('tree'), {
 
 const panel = new Panel(document.getElementById('panel'), {
   onClose: deselect,
-  onCable: (id) => selectCable(id)
+  onCable: (id) => selectCable(id),
+  onPipe: (id) => selectPipe(id)
 });
 
 const walk = new Walk(document.getElementById('walk'), {
@@ -334,12 +375,23 @@ document.querySelectorAll('#levels button').forEach((b) => {
 document.querySelectorAll('#views button').forEach((b) => {
   b.onclick = () => {
     if (b.dataset.view === 'fit') { nav.fit(58, new THREE.Vector3(0, 7, -4)); }
-    else nav.view(b.dataset.view);
+    else if (b.dataset.view === 'risers') {
+      // the four shafts sit in a line near z 11; frame them so the risers are readable
+      if (state.level !== 'ALL') setLevel('ALL');
+      nav.focus(new THREE.Vector3(2, 7, 11), 1.25);
+      nav.theta = Math.PI * 0.62;
+      nav.phi = Math.PI * 0.4;
+      nav.apply();
+    } else nav.view(b.dataset.view);
   };
 });
 document.getElementById('chkRoof').onchange = (e) => { state.roof = e.target.checked; applyDisplay(); };
 document.getElementById('chkCables').onchange = (e) => {
   state.cables = e.target.checked;
+  applyDisplay();
+};
+document.getElementById('chkPipes').onchange = (e) => {
+  state.pipes = e.target.checked;
   applyDisplay();
 };
 document.getElementById('chkStructure').onchange = (e) => {
@@ -355,14 +407,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') deselect();
 });
 
-/* hand tool and pad placement */
-const btnPan = document.getElementById('btnPan');
-btnPan.onclick = () => {
-  const on = !nav.panMode;
-  nav.setPanMode(on);
-  btnPan.classList.toggle('on', on);
-};
-
+/* pad placement: it sits above the walkthrough bar, and must never be covered by it */
 function placePad() {
   const walkEl = document.getElementById('walk');
   const pad = document.getElementById('pad');
@@ -425,7 +470,7 @@ function boot() {
   const total = site.items.filter((i) => i.key === 'rack').length;
   document.getElementById('status').textContent =
     `${SYSTEMS.length} systems · ${Object.keys(EQUIPMENT).length} equipment types · ${total} AI racks · 3 levels`;
-  window.__app = { scene, camera, nav, site, flow, cables, select, selectCable, setLevel, state, EQUIPMENT, INDEX, FLOWS, SYS_COLOR };
+  window.__app = { scene, camera, nav, site, flow, cables, pipes, select, selectCable, selectPipe, setLevel, state, EQUIPMENT, INDEX, FLOWS, SYS_COLOR };
 }
 boot();
 tick();

@@ -3,6 +3,7 @@ import { EQUIPMENT, SYSTEMS, INDEX, FLOWS, SYS_COLOR } from './data/systems.js';
 import { PHOTOS } from './data/photos.js';
 import { VIDEOS } from './data/videos.js';
 import { CABLES_TOUCHING } from './data/cables.js';
+import { PIPES_TOUCHING, SERVICE } from './data/pipes.js';
 
 const el = (tag, cls, html) => {
   const n = document.createElement(tag);
@@ -101,6 +102,7 @@ export class Panel {
     this.current = null;
     this.onClose = opts.onClose || null;
     this.onCable = opts.onCable || null;
+    this.onPipe = opts.onPipe || null;
   }
 
   clear() {
@@ -140,8 +142,23 @@ export class Panel {
         </button>`;
     }).join('');
     const cables = wires ? `<section class="cablelist">
-          <h3>Connections</h3>
+          <h3>Electrical connections</h3>
           ${wires}
+        </section>` : '';
+
+    const plines = PIPES_TOUCHING(key).map((pp) => {
+      const svc = SERVICE[pp.service] || {};
+      const other = pp.from === key ? pp.to : pp.from;
+      const otherName = (EQUIPMENT[other] && EQUIPMENT[other].tag) || other;
+      return `<button class="piperow" data-pipe="${pp.id}" style="--sc:#${(svc.color || 0x5A6B82).toString(16).padStart(6, '0')}">
+          <span class="cid">${pp.id}<i class="dir">${pp.from === key ? 'feeds' : 'fed by'}</i></span>
+          <span class="cto">${otherName}</span>
+          <span class="cspec">DN${pp.dn} · ${svc.short || ''} · ${pp.temp}</span>
+        </button>`;
+    }).join('');
+    const pipework = plines ? `<section class="cablelist pipelist">
+          <h3>Pipework</h3>
+          ${plines}
         </section>` : '';
 
     const shot = `<figure class="shot">
@@ -169,6 +186,7 @@ export class Panel {
       <div class="p-body">
         <p class="philo">${e.philosophy || ''}</p>
         ${cables}
+        ${pipework}
         ${shot}
         ${photo}
         <section>
@@ -205,6 +223,25 @@ export class Panel {
     this.mount.querySelectorAll('.cablerow').forEach((b) => {
       b.onclick = () => this.onCable && this.onCable(b.dataset.cable);
     });
+    this.mount.querySelectorAll('.piperow').forEach((b) => {
+      b.onclick = () => this.onPipe && this.onPipe(b.dataset.pipe);
+    });
+    this.mount.querySelector('.p-body').scrollTop = 0;
+  }
+
+  showPipe(def, length) {
+    if (!def) return;
+    this.current = 'pipe:' + def.id;
+    this.mount.innerHTML = `
+      <button class="close" title="Close">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M5 5l14 14M19 5 5 19"/>
+        </svg>
+      </button>
+      ${pipeCardHTML(def, length)}`;
+    this.mount.classList.add('open');
+    const closeBtn = this.mount.querySelector('.close');
+    if (closeBtn && this.onClose) closeBtn.onclick = () => this.onClose();
     this.mount.querySelector('.p-body').scrollTop = 0;
   }
 
@@ -271,6 +308,46 @@ export function cableCardHTML(def, length, anchors) {
           : (def.render && def.render.type === 'duct'
             ? `Rises to its own busduct support level at ${def.tray} m, runs on the two axes in turn, then drops into the far end. It does not sit in a tray: at this current it is the tray.`
             : `Leaves the equipment, rises into the cable tray at ${def.tray} m, runs along the two axes in turn, then drops into the far end.`)} Bends are swept, not mitred, and nothing crosses a room diagonally.</p>
+      </section>
+    </div>`;
+}
+
+export function pipeCardHTML(def, length) {
+  const svc = SERVICE[def.service] || {};
+  const fromName = (EQUIPMENT[def.from] && EQUIPMENT[def.from].name) || def.from;
+  const toName = (EQUIPMENT[def.to] && EQUIPMENT[def.to].name) || def.to;
+  const hex = '#' + (svc.color || 0x5A6B82).toString(16).padStart(6, '0');
+  return `
+    <div class="p-head" style="--c:${hex}">
+      <div class="p-crumb">Mechanical <span>/</span> ${svc.name || 'Pipework'}</div>
+      <h2>${def.id}</h2>
+      <div class="p-tagrow"><span class="pill" style="background:${hex}">${svc.short || ''}</span><span class="p-short">${fromName} to ${toName}</span></div>
+    </div>
+    <div class="p-body">
+      <p class="philo">${def.note || ''}</p>
+      <section>
+        <h3>Schedule</h3>
+        <div class="kvs">
+          <div class="kv"><span>From</span><b>${fromName}</b></div>
+          <div class="kv"><span>To</span><b>${toName}</b></div>
+          <div class="kv"><span>Service</span><b>${svc.name || ''}</b></div>
+          <div class="kv"><span>Line size</span><b>DN${def.dn}</b></div>
+          <div class="kv"><span>Medium</span><b>${def.medium}</b></div>
+          <div class="kv"><span>Temperature</span><b>${def.temp}</b></div>
+          <div class="kv"><span>Design flow</span><b>${def.flow}</b></div>
+          <div class="kv"><span>Insulation</span><b>${def.insulation}</b></div>
+          <div class="kv"><span>Route length</span><b>${length ? length.toFixed(1) + ' m' : 'n/a'}</b></div>
+        </div>
+      </section>
+      <section>
+        <h3>Route</h3>
+        <p>${def.routeNote || ''}</p>
+      </section>
+      <section>
+        <h3>Why it is drawn this way</h3>
+        <p>${def.elev === 'buried'
+          ? 'Buried at grade in a duct, entering each end below floor level, with the slab penetrations shown where it rises.'
+          : `Runs at ${def.elev} m above its own floor, on hangers to the slab, with flanges every 6 m and an isolation valve at each equipment connection.`} Where it crosses a floor the sleeve is drawn, because a riser is a hole in a slab with a fire stop around it, not a line on a drawing.</p>
       </section>
     </div>`;
 }

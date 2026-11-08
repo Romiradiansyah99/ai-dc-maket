@@ -46,18 +46,15 @@ for (let i = 0; i < 4; i++) { await padBtn.click(); await new Promise((r) => set
 const s1 = await state();
 out.pad = { moved: !same(s0.t, s1.t), to: s1.t };
 
-// 2. hand tool, left drag: pans, must not rotate or zoom
-await page.click('#btnPan');
-await new Promise((r) => setTimeout(r, 100));
+// 2. middle button (scroll wheel press) drags to pan, no rotation, no zoom
 const s2 = await state();
-await drag({ button: 'left', dx: 120, dy: 40 });
+await drag({ button: 'middle', dx: 120, dy: 40 });
 const s3 = await state();
-out.hand = {
+out.middleButton = {
   moved: !same(s2.t, s3.t),
   rotationUnchanged: s2.theta === s3.theta && s2.phi === s3.phi,
   zoomUnchanged: s2.zoom === s3.zoom
 };
-await page.click('#btnPan');
 
 // 3. plain left drag orbits
 const s4 = await state();

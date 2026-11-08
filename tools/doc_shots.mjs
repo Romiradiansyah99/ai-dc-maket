@@ -40,5 +40,19 @@ await new Promise((r) => setTimeout(r, 2500));
 await page.screenshot({ path: path.join(ROOT, 'docs/screenshot-panel.png') });
 console.log('OK docs/screenshot-panel.png');
 
+await page.evaluate(() => {
+  window.__app.selectPipe('CHW-07');
+});
+await new Promise((r) => setTimeout(r, 900));
+await page.screenshot({ path: path.join(ROOT, 'docs/screenshot-pipes.png') });
+console.log('OK docs/screenshot-pipes.png');
+
+await page.evaluate(() => {
+  document.querySelector('[data-view="risers"]').click();
+});
+await new Promise((r) => setTimeout(r, 1600));
+await page.screenshot({ path: path.join(ROOT, 'docs/screenshot-risers.png') });
+console.log('OK docs/screenshot-risers.png');
+
 await browser.close();
 server.close();

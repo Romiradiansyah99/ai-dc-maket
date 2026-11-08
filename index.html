@@ -51,15 +51,11 @@
       <button data-view="iso">Iso</button>
       <button data-view="top">Plan</button>
       <button data-view="front">Front</button>
-      <button id="btnPan" class="pan-toggle" title="Pan tool: drag with the left button (or hold Space)">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.7">
-          <path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-1.2a5 5 0 0 1-3.6-1.5L5 15.5a1.6 1.6 0 0 1 2.3-2.2L9 15"/>
-        </svg>
-        Pan
-      </button>
+      <button data-view="risers" title="Jump to the riser shafts">Risers</button>
     </div>
     <label class="chk"><input type="checkbox" id="chkExplode"> Exploded</label>
     <label class="chk"><input type="checkbox" id="chkCables" checked> Cables</label>
+    <label class="chk"><input type="checkbox" id="chkPipes" checked> Pipes</label>
     <label class="chk"><input type="checkbox" id="chkStructure" checked> Structure</label>
     <label class="chk"><input type="checkbox" id="chkRoof"> Roof</label>
     <label class="chk"><input type="checkbox" id="chkPaper" checked> Paper</label>
@@ -99,7 +95,8 @@
       <li><b>Drag</b> to orbit. <b>Right drag</b>, <b>Alt + drag</b> or <b>Shift + drag</b> to pan.</li>
       <li><b>Scroll</b> to zoom toward the cursor, <b>Shift + scroll</b> to pan sideways. <b>F</b> fits the model back into view.</li>
       <li>On touch: <b>one finger</b> orbits, <b>two fingers</b> pan and zoom.</li>
-      <li>Pan: click <b>Pan</b> and drag with the left button, hold <b>Space</b> and drag, right drag, or use the arrow pad at the lower left. Pan moves the view across the screen without rotating it.</li>
+      <li>Pan: press and hold the <b>scroll wheel</b> and drag. Right drag and the arrow pad at the lower left do the same thing. Pan slides the view across the screen without rotating it; the wheel still zooms toward the cursor.</li>
+      <li>Pipes: tick <b>Pipes</b> to show the cooling and fire pipework, including every riser and the slabs it passes through. Click a pipe to read its schedule.</li>
       <li>Cables: tick <b>Cables</b> to show every electrical circuit. Click a cable to read its schedule: what it connects, what it is made of and how it is routed.</li>
     </ul>
     <h3>Reading the model</h3>

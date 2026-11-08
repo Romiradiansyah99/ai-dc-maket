@@ -14,7 +14,7 @@ A three level, click through model of a **3.2 MW liquid cooled AI data center**,
 | Systems | 6 systems, 13 subsystems, 48 equipment types, 32 AI racks |
 | Levels | L0 plant and yard, L1 white space, L2 support |
 | Walkthrough | Electrical path, 13 stages, one stage at a time |
-| Connections | 26 cables and busducts, routed in tray, duct bank or riser |
+| Connections | 26 cables and busducts, 17 pipe runs, 4 riser shafts |
 | Stack | Vanilla ES modules, three.js r160 vendored locally, no build step, no framework |
 
 ## What you can do with it
@@ -24,7 +24,8 @@ A three level, click through model of a **3.2 MW liquid cooled AI data center**,
 - **Follow the electrical path.** One guided walkthrough, 13 stages, from the 20 kV incomer to the silicon: camera follows, the live segment pulses, and the badge changes with the voltage (20 kV, 400 V, 48 V DC). The cooling and fire sequences were removed rather than half explained.
 - **Inspect equipment.** Every panel opens with a single sentence on what the thing actually does, then two visuals, then the engineering detail: function, design values, failure modes, commissioning checks and reference figures. The first visual is a model view rendered from that equipment's own geometry, so it always matches the object on screen. The second is a licensed reference photograph where one exists, with attribution.
 - **See the connections, not just the boxes.** Every electrical circuit is modelled: 26 cables and busducts routed from the actual equipment positions, in ladder trays with rungs and hanger rods to the slab, or buried in a duct bank. Click any cable to read its schedule.
-- **Navigate like SketchUp.** Drag to orbit, **Pan** tool or hold `Space` for a left drag pan, right drag to pan, scroll to zoom toward the cursor, `F` to fit. The arrow pad at the lower left also pans. Touch gets one finger orbit and two finger pan and zoom.
+- **Navigate like SketchUp.** Left drag orbits. **Press and hold the scroll wheel and drag to pan**: no rotation, no zoom, just slide. Right drag and the arrow pad do the same, `Space` + drag also pans, the wheel zooms toward the cursor, `F` fits. Touch gets one finger orbit and two finger pan and zoom.
+- **Find the risers.** The shafts are modelled with corner posts, a frame at every slab, penetration sleeves and a label. The **Risers** view jumps straight to them.
 
 ![Equipment panel for the water cooled chiller](docs/screenshot-panel.jpg)
 
@@ -46,6 +47,32 @@ Routing follows installation practice: leave the equipment at the top face, rise
 tray at the run elevation, run along one axis then the other, drop into the far end. Trays
 carry rungs and hanger rods because a tray is supported, never floating. Busducts are drawn
 as busducts, because at 4,000 A the tray *is* the busduct.
+
+## The pipe model
+
+Cooling and fire pipework is built the same way as the electrical layer: a schedule in
+`src/data/pipes.js`, geometry generated from it in `src/scene/pipes.js`.
+
+| Loop | Runs | Medium |
+|---|---|---|
+| Technology | Manifold to CDU, rack drops | 35% glycol, 45/38 C, DN200 and DN50 hoses |
+| Facility, chilled water | CDU to heat exchanger, pump, header, chillers | Treated water, 32/26 C, DN250 |
+| Condenser water | Chillers to cooling towers, dry cooler changeover | Treated water, 37/29 C, DN300 buried |
+| CRAH | Header to the white space through the chilled water riser | 18 to 22 C, DN150 |
+| Fire | Fire pump, riser, preaction pipe above both halls | Fire main, DN150, dry until two signals agree |
+
+Every run is drawn with the thing that makes it read as pipework rather than a line:
+insulation sleeve, flange pairs every 6 m, an isolation valve at each equipment connection,
+hanger rods to the slab, and a sleeve wherever it passes a floor. Supply and return legs are
+drawn as a pair, offset perpendicular to the run.
+
+The four riser shafts (LV busway, chilled water, fire, fiber) are enclosed with corner posts
+and a frame at every slab, so a vertical run reads as a shaft through a building rather than
+a floating line.
+
+![Cooling pipework](docs/screenshot-pipes.jpg)
+
+![Riser shafts](docs/screenshot-risers.jpg)
 
 ## Design basis
 
@@ -80,6 +107,8 @@ src/scene/flow.js       animated flow paths and travelling pulses
 src/data/systems.js     the hierarchy: systems, subsystems, walkthroughs
 src/data/cables.js      the cable schedule: 26 circuits, sizes, loads, route notes
 src/scene/cables.js     routes and draws the connection layer from that schedule
+src/data/pipes.js       the pipe schedule: 17 runs, DN, medium, temperature, flow
+src/scene/pipes.js      routes and draws pipework, insulation, valves, supports, sleeves
 src/data/equipment-*.js the equipment catalogue and its content
 src/data/layout.js      site, levels, rooms, placements
 docs/                   capacity ledger, architecture notes, photo credits

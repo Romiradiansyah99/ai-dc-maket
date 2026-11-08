@@ -197,6 +197,13 @@ body.no-paper #grain{opacity:0}
   padding-left:12px;border-left:2px solid var(--c);
   font-style:italic;
 }
+/* shaft labels */
+.lbl-shaft{
+  font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  color:#2C3E57;background:rgba(255,255,255,.86);border:1px solid var(--line);
+  padding:2px 5px;white-space:nowrap;
+}
+
 figure.shot{margin:0 0 14px}
 figure.shot img{
   width:100%;display:block;border:1px solid var(--line);

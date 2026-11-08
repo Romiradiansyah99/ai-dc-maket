@@ -563,12 +563,34 @@ function addRisers(root) {
     if (r.kind === 'busway') {
       b.box(0.4, len, 0.4, C.accent, { pos: [r.x, y, r.z], edge: true, amp: 0.004 });
     } else if (r.kind === 'pipe') {
-      b.cyl(0.22, len, C.teal, { pos: [r.x - 0.3, y, r.z], edge: true, amp: 0.004 });
-      b.cyl(0.16, len, C.teal, { pos: [r.x + 0.3, y, r.z], edge: true, amp: 0.004 });
+      // water and fire risers are built by the pipe layer, from the pipe schedule,
+      // so they connect to something instead of being a decorative shaft
+      continue;
     } else {
       b.box(0.75, len, 0.3, C.fill2, { pos: [r.x, y, r.z], edge: true, amp: 0.004 });
     }
   }
+
+  // Shaft enclosure: four corner angles and a frame at every slab, so a riser reads
+  // as a shaft passing through floors rather than a line floating in the building.
+  const S = 0.95;
+  for (const r of RISERS) {
+    const len = r.to - r.from;
+    const midY = r.from + len / 2;
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      b.box(0.07, len, 0.07, C.dark, {
+        pos: [r.x + sx * S, midY, r.z + sz * S], edge: true, amp: 0.003
+      });
+    }
+    for (const lv of LEVELS) {
+      if (lv.y < r.from || lv.y > r.to) continue;
+      for (const s2 of [-1, 1]) {
+        b.box(2 * S, 0.05, 0.05, C.dark, { pos: [r.x, lv.y + 0.03, r.z + s2 * S], edge: false });
+        b.box(0.05, 0.05, 2 * S, C.dark, { pos: [r.x + s2 * S, lv.y + 0.03, r.z], edge: false });
+      }
+    }
+  }
+
   const g = b.finish();
   g.name = 'risers';
   root.add(g);
