@@ -13,6 +13,11 @@
 //   elev      metres above the run's own floor, or 'buried'
 //   dn        nominal bore in mm, used for the drawn radius
 //   pair      draws a parallel supply and return leg, offset to the side
+//
+// Riser waypoints come from layout.js, so a pipe cannot cross a slab outside the
+// shaft it claims to use.
+
+import { R } from './layout.js';
 
 export const PIPES = [
   /* ---------------- technology loop, inside the halls ---------------- */
@@ -120,15 +125,15 @@ export const PIPES = [
     id: 'CHW-07', from: 'header', to: 'crah', toIndex: 2, service: 'chws',
     dn: 150, medium: 'Water, treated', temp: '18 to 22 C supply',
     flow: '45 m3/h', insulation: 'Closed cell, 25 mm', elev: 1.8,
-    via: [[-20, 1.8, 9.4], [11.5, 1.8, 9.4], [11.5, 8.4, 9.4], [11.5, 8.4, -2.2], [7.5, 8.4, -2.2]],
-    routeNote: 'Up the chilled water riser to the white space, then along the CRAH line',
-    note: 'The riser is the reason a CRAH on the first floor can be fed from a chiller on the ground floor. Everything vertical in this building passes through four shafts.'
+    via: [[-20, 1.8, 9.4], [R.chw[0] - 0.45, 1.8, R.chw[1]], [R.chw[0] - 0.45, 8.4, R.chw[1]], [7.5, 8.4, R.chw[1]], [7.5, 8.4, -2.2]],
+    routeNote: `Up the chilled water riser at x ${R.chw[0]}, z ${R.chw[1]} to the white space, then along the CRAH line`,
+    note: 'The riser is the reason a CRAH on the upper floor can be fed from a chiller on the ground floor. Every vertical service in this building travels in one shaft room, which is also where every firestop is.'
   },
   {
     id: 'CHW-08', from: 'header', to: 'crah', toIndex: 3, service: 'chws',
     dn: 150, medium: 'Water, treated', temp: '18 to 22 C supply',
     flow: '45 m3/h', insulation: 'Closed cell, 25 mm', elev: 1.8,
-    via: [[-20, 1.8, 9.4], [11.5, 1.8, 9.4], [11.5, 8.4, 9.4], [11.5, 8.4, -2.2], [23.5, 8.4, -2.2]],
+    via: [[-20, 1.8, 9.4], [R.chw[0] + 0.45, 1.8, R.chw[1]], [R.chw[0] + 0.45, 8.4, R.chw[1]], [23.5, 8.4, R.chw[1]], [23.5, 8.4, -2.2]],
     routeNote: 'Second hall branch from the same riser',
     note: 'Same riser, second branch. Two halls fed from one shaft means one fire stop to maintain, and one place to look when the flow balance is wrong.'
   },
@@ -138,15 +143,15 @@ export const PIPES = [
     id: 'FIRE-01', from: 'firepump', to: 'preaction', toIndex: 0, service: 'fire',
     dn: 150, medium: 'Water, fire main', temp: 'Ambient',
     flow: '1,500 L/min', insulation: 'None, red', elev: 1.9,
-    via: [[8.2, 1.9, -2.4], [8.5, 1.9, 11], [8.5, 10.9, 11], [8.5, 10.9, -11.8], [-15.5, 10.9, -11.8]],
-    routeNote: 'Fire pump discharge up the fire riser at x 8.5, z 11, then along the hall ceiling',
+    via: [[8.2, 1.9, -2.4], [R.fire[0] - 0.35, 1.9, R.fire[1]], [R.fire[0] - 0.35, 10.9, R.fire[1]], [R.fire[0] - 0.35, 10.9, -11.8], [-15.5, 10.9, -11.8]],
+    routeNote: `Fire pump discharge up the fire riser at x ${R.fire[0]}, z ${R.fire[1]}, then along the hall ceiling`,
     note: 'Dry until two signals agree. The pipe above a data hall is deliberately empty, because a burst pipe over live racks costs more than a fire.'
   },
   {
     id: 'FIRE-02', from: 'firepump', to: 'preaction', toIndex: 1, service: 'fire',
     dn: 150, medium: 'Water, fire main', temp: 'Ambient',
     flow: '1,500 L/min', insulation: 'None, red', elev: 1.9,
-    via: [[8.2, 1.9, -2.4], [8.5, 1.9, 11], [8.5, 10.9, 11], [8.5, 10.9, -11.8], [15.5, 10.9, -11.8]],
+    via: [[8.2, 1.9, -2.4], [R.fire[0] + 0.35, 1.9, R.fire[1]], [R.fire[0] + 0.35, 10.9, R.fire[1]], [R.fire[0] + 0.35, 10.9, -11.8], [15.5, 10.9, -11.8]],
     routeNote: 'Same riser, branch to the second hall ceiling',
     note: 'One riser serves both halls. That is a deliberate single point of failure, and it is why the fire pump has a diesel standby.'
   }

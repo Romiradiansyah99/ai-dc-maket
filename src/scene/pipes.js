@@ -6,7 +6,7 @@
 // through a floor, so every one of them gets a sleeve at the slab.
 import * as THREE from 'three';
 import { Builder, C } from './kit.js';
-import { LEVELS } from '../data/layout.js';
+import { LEVELS, BURIED } from '../data/layout.js';
 import { PIPES, SERVICE } from '../data/pipes.js';
 
 const floorY = (id) => (LEVELS.find((l) => l.id === id) || LEVELS[0]).y;
@@ -44,9 +44,11 @@ function routeFor(site, def) {
 
   const buried = def.elev === 'buried';
   const fy = floorY((site.byKey[def.from][0] || {}).floor || 'L0');
-  const elev = buried ? 0.7 : fy + (def.elev || 1.6);
-  const start = buried ? new THREE.Vector3(a.x, 0.7, a.z) : a.clone();
-  const end = buried ? new THREE.Vector3(b.x, 0.7, b.z) : b.clone();
+  // Buried means below grade, not on the lawn. The run leaves the equipment at floor
+  // level, dives to the trench, and comes back up at the far end.
+  const elev = buried ? BURIED.pipe : fy + (def.elev || 1.6);
+  const start = buried ? new THREE.Vector3(a.x, 0.15, a.z) : a.clone();
+  const end = buried ? new THREE.Vector3(b.x, 0.15, b.z) : b.clone();
 
   let raw;
   if (def.via && def.via.length) {
@@ -115,6 +117,37 @@ function addHanger(b, p, ceilY, r) {
   b.box(r * 4.4, 0.05, 0.05, C.dark, { pos: [p.x, p.y + 0.02, p.z], edge: false });
 }
 
+// A buried run is drawn inside its trench: gravel bed, two side walls, and a
+// warning tape above the pipe. Without this the pipe is a line, not a buried main.
+function addTrench(b, points, r) {
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1], c = points[i];
+    const horiz = Math.hypot(c.x - a.x, c.z - a.z);
+    if (horiz < 1.5 || Math.abs(c.y - a.y) > 0.25) continue;
+    if (a.y > -0.2) continue;
+    const alongX = Math.abs(c.x - a.x) > Math.abs(c.z - a.z);
+    const mx = (a.x + c.x) / 2, mz = (a.z + c.z) / 2;
+    const y = a.y;
+    const depth = 0.55;
+    const hw = r * 2.2;
+    // side walls
+    for (const s2 of [-1, 1]) {
+      b.box(alongX ? horiz : 0.06, depth, alongX ? 0.06 : horiz, C.dark, {
+        pos: [mx + (alongX ? 0 : s2 * hw), y + depth / 2 - 0.08, mz + (alongX ? s2 * hw : 0)],
+        edge: false
+      });
+    }
+    // gravel bed
+    b.box(alongX ? horiz : hw * 2, 0.05, alongX ? hw * 2 : horiz, C.fill2, {
+      pos: [mx, y - r - 0.06, mz], edge: false
+    });
+    // marker tape above the pipe
+    b.box(alongX ? horiz : 0.09, 0.015, alongX ? 0.09 : horiz, C.alarm, {
+      pos: [mx, y + r + 0.1, mz], edge: false
+    });
+  }
+}
+
 // Where a pipe passes a slab, show the sleeve. This is what makes a riser read.
 function addSleeves(b, points) {
   for (const lv of LEVELS) {
@@ -178,6 +211,7 @@ function buildOne(site, def) {
       }
     }
   }
+  if (def.elev === 'buried') addTrench(b, points, r);
   addSleeves(b, points);
 
   const group = b.finish();

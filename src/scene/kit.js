@@ -12,7 +12,8 @@ export const C = {
   teal: 0x0E7E88,
   alarm: 0xA31621,
   white: 0xFFFFFF,
-  ghost: 0xC2D2E4
+  ghost: 0xC2D2E4,
+  copper: 0xB4713C
 };
 
 const matCache = new Map();

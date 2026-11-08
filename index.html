@@ -57,6 +57,7 @@
     <label class="chk"><input type="checkbox" id="chkCables" checked> Cables</label>
     <label class="chk"><input type="checkbox" id="chkPipes" checked> Pipes</label>
     <label class="chk"><input type="checkbox" id="chkStructure" checked> Structure</label>
+    <label class="chk"><input type="checkbox" id="chkGrade" checked> Ground</label>
     <label class="chk"><input type="checkbox" id="chkRoof"> Roof</label>
     <label class="chk"><input type="checkbox" id="chkPaper" checked> Paper</label>
     <button id="btnHelp" class="ghost" title="How to use">?</button>
@@ -73,15 +74,6 @@
 
 <aside id="panel" aria-live="polite"></aside>
 
-<div id="pad" aria-label="Pan and zoom">
-  <button data-pan="0,-1" title="Pan forward">&#9650;</button>
-  <button data-pan="-1,0" title="Pan left">&#9664;</button>
-  <button data-pan="1,0" title="Pan right">&#9654;</button>
-  <button data-pan="0,1" title="Pan back">&#9660;</button>
-  <button data-zoom="in" title="Zoom in">+</button>
-  <button data-zoom="out" title="Zoom out">&minus;</button>
-</div>
-
 <footer id="walk"></footer>
 
 <div id="statusbar"><span id="status">Loading</span></div>
@@ -95,7 +87,8 @@
       <li><b>Drag</b> to orbit. <b>Right drag</b>, <b>Alt + drag</b> or <b>Shift + drag</b> to pan.</li>
       <li><b>Scroll</b> to zoom toward the cursor, <b>Shift + scroll</b> to pan sideways. <b>F</b> fits the model back into view.</li>
       <li>On touch: <b>one finger</b> orbits, <b>two fingers</b> pan and zoom.</li>
-      <li>Pan: press and hold the <b>scroll wheel</b> and drag. Right drag and the arrow pad at the lower left do the same thing. Pan slides the view across the screen without rotating it; the wheel still zooms toward the cursor.</li>
+      <li>Pan: press and hold the <b>scroll wheel</b> and drag. Middle drag slides the view across the screen without rotating or zooming it.</li>
+      <li>Buried services sit below grade. Untick <b>Ground</b> to look straight down at the duct banks, the trenches and the earth ring.</li>
       <li>Pipes: tick <b>Pipes</b> to show the cooling and fire pipework, including every riser and the slabs it passes through. Click a pipe to read its schedule.</li>
       <li>Cables: tick <b>Cables</b> to show every electrical circuit. Click a cable to read its schedule: what it connects, what it is made of and how it is routed.</li>
     </ul>

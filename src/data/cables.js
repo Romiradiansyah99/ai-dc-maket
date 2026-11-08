@@ -5,11 +5,23 @@
 // The scene builds geometry straight from these records, so the drawing and the
 // schedule cannot drift apart.
 //
-//   kind   mv | lv | duct | dc | earth
+//   kind   mv | lv | duct | dc | bl | fiber | earth
+//            mv    medium voltage, 20 kV
+//            lv    low voltage, IT critical path
+//            duct  busduct, the high current runs
+//            dc    rack power, downstream of the hall busway
+//            bl    building services, generator backed but not UPS backed
+//            fiber structured cabling, no power
 //   tray   elevation the run sits at, in metres above its own floor
 //   via    explicit waypoints, used where the run has to follow a riser
+//   at     for walkthroughs: which end the pulse starts from
 //   render tubes  : how many parallel cables are drawn, and their radius
 //          duct   : drawn as a busduct or tray busbar instead of cables
+//
+// Riser waypoints are taken from layout.js, so a run cannot pass a floor outside
+// the shaft it claims to use.
+
+import { R } from './layout.js';
 
 export const CABLES = [
   /* ---------------------------- MV, 20 kV ---------------------------- */
@@ -67,7 +79,7 @@ export const CABLES = [
     circuits: 1, load: '3,608 A at 400 V',
     routeNote: 'Busduct from the transformer LV terminals to the main switchboard, one duct per transformer',
     note: 'This is the highest current cable in the building. At 400 V a 2,500 kVA transformer delivers 3,608 A, so it is busduct, not cable, and it is short for a reason.',
-    render: { type: 'duct', w: 0.34, h: 0.22 }
+    render: { type: 'duct', w: 0.42, h: 0.30 }
   })),
   {
     id: 'LV-05', from: 'msb', to: 'apfc', kind: 'lv', tray: 3.0,
@@ -80,7 +92,7 @@ export const CABLES = [
     id: 'LV-06', from: 'msb', to: 'pdb', kind: 'lv', tray: 2.9,
     voltage: '400 V', conductor: '4C x 185 mm2 Cu/PVC', circuits: 1, load: '400 A',
     routeNote: 'LV tray, switchboard to power distribution board',
-    note: 'Step one of the distribution chain. From here the site splits into cooling plant, small power and mechanical services.',
+    note: 'Step one of the critical distribution chain. Everything downstream of here is either UPS protected or deliberately not.',
     render: { type: 'tubes', n: 2, r: 0.055 }
   },
   {
@@ -119,22 +131,82 @@ export const CABLES = [
     render: { type: 'tubes', n: 4, r: 0.085 }
   },
   {
-    id: 'LV-12', from: 'ups', to: 'pdumain', kind: 'duct', tray: 3.0,
+    id: 'LV-12', from: 'ups', to: 'pdumain', kind: 'duct', tray: 3.4,
     voltage: '400 V', conductor: 'Busduct, 1,600 A',
     circuits: 1, load: '1,600 A',
-    routeNote: 'UPS output to the LV busway riser at x 1.5, z 11, then up to the white space',
-    via: [[1.5, 3.4, -16.8], [1.5, 3.4, 11], [1.5, 9.4, 11], [1.5, 9.4, 12.6]],
-    note: 'Crosses a floor. Upside down in the drawing on purpose: this is the only electrical run that has to pass through a shaft, and the shaft is shared with everything else.',
-    render: { type: 'duct', w: 0.3, h: 0.2 }
+    routeNote: `UPS output to the LV busduct riser at x ${R.lv[0]}, z ${R.lv[1]}, then up into the IT electrical room`,
+    via: [[R.lv[0] - 0.45, 3.4, -16.8], [R.lv[0] - 0.45, 3.4, R.lv[1]], [R.lv[0] - 0.45, 9.4, R.lv[1]], [13, 9.4, R.lv[1]], [13, 9.4, 11]],
+    note: 'The riser run. This is the busduct that leaves the ground floor electrical room and arrives on the white space level, and everything in the hall is fed from where it lands.',
+    render: { type: 'duct', w: 0.38, h: 0.28 }
   },
   {
-    id: 'LV-13', from: 'sts', to: 'busway', kind: 'duct', tray: 3.0,
+    id: 'LV-13', from: 'sts', to: 'busway', kind: 'duct', tray: 3.4,
     voltage: '400 V', conductor: 'Busduct, 1,600 A',
     circuits: 1, load: '1,600 A',
-    routeNote: 'STS output to the hall busway through the same riser',
-    via: [[1.5, 3.4, -16.0], [1.5, 3.4, 11], [1.5, 9.4, 11], [1.5, 9.4, -9.75]],
-    note: 'Second source into the hall. Two busways, two paths, and a rack that can only be fed from both is the point.',
-    render: { type: 'duct', w: 0.3, h: 0.2 }
+    routeNote: `STS output up the same riser at x ${R.lv[0]}, z ${R.lv[1]}, then to the hall`,
+    via: [[R.lv[0] + 0.10, 3.4, -16.0], [R.lv[0] + 0.10, 3.4, R.lv[1]], [R.lv[0] + 0.10, 9.4, R.lv[1]], [R.lv[0] + 0.10, 9.4, -9.75]],
+    note: 'Second source into the hall. Two busducts, two paths, and a rack that can only be fed from both is the point.',
+    render: { type: 'duct', w: 0.38, h: 0.28 }
+  },
+
+  /* ------------------ Building services, 400 V ----------------------- */
+  {
+    id: 'BL-01', from: 'msb', to: 'mdbn', kind: 'bl', tray: 2.8,
+    voltage: '400 V', conductor: '4 x (4C x 240 mm2 Cu/PVC)', circuits: 2, load: '2,000 A',
+    routeNote: 'Tap off the generator backed section of the main switchboard into the building services board',
+    note: 'The fork in the road. Left of this cable the load is protected by batteries; right of it the load is protected only by the generators, and cold start is measured in minutes, not milliseconds.',
+    render: { type: 'tubes', n: 3, r: 0.07 }
+  },
+  {
+    id: 'BL-02', from: 'mdbn', to: 'chiller', toIndex: 0, kind: 'bl', tray: 3.2,
+    voltage: '400 V', conductor: '2 x (4C x 300 mm2 Cu/PVC)', circuits: 2, load: '900 A',
+    routeNote: 'Tray across the plant room to the chiller compressor starter panel',
+    note: 'Chillers are not on the UPS and never will be: 3 MW of compressor on battery is not a design, it is a fantasy. They are on the generator, and the thermal ride-through covers the restart.',
+    render: { type: 'tubes', n: 2, r: 0.075 }
+  },
+  {
+    id: 'BL-03', from: 'mdbn', to: 'pumppri', toIndex: 0, kind: 'bl', tray: 3.0,
+    voltage: '400 V', conductor: '4C x 185 mm2 Cu/PVC', circuits: 1, load: '400 A',
+    routeNote: 'Tray to the primary pump VFD panel',
+    note: 'The pumps come back before the chillers do, because a chiller with no flow trips on evaporator freeze protection within about thirty seconds.',
+    render: { type: 'tubes', n: 2, r: 0.055 }
+  },
+  {
+    id: 'BL-04', from: 'mdbn', to: 'crah', toIndex: 2, kind: 'bl', tray: 3.0,
+    voltage: '400 V', conductor: '4C x 95 mm2 Cu/PVC', circuits: 1, load: '200 A',
+    routeNote: `Building services cables in their own lane of the riser at x 0.65, z ${R.lv[1]}, up to the CRAH line`,
+    via: [[R.lv[0] + 0.65, 3.0, -13.2], [R.lv[0] + 0.65, 3.0, R.lv[1]], [R.lv[0] + 0.65, 8.6, R.lv[1]], [7.5, 8.6, R.lv[1]], [7.5, 8.6, -2.2]],
+    note: 'A CRAH fan is a small load with a large consequence: without airflow the hall overheats in minutes even with the liquid loop running, because 15 percent of the heat never reaches a cold plate.',
+    render: { type: 'tubes', n: 2, r: 0.05 }
+  },
+  {
+    id: 'BL-05', from: 'mdbn', to: 'coolingtower', toIndex: 0, kind: 'bl', tray: 'buried',
+    voltage: '400 V', conductor: '2 x (4C x 185 mm2 Cu/PVC)', circuits: 2, load: '500 A',
+    routeNote: 'Buried duct bank out of the plant room to the tower yard, rising at the tower control panel',
+    note: 'Heat rejection is the load nobody plans for. Lose the tower fans and the condenser water climbs until the chillers trip on high pressure, usually within twenty minutes.',
+    render: { type: 'tubes', n: 2, r: 0.06 }
+  },
+  {
+    id: 'BL-06', from: 'mdbn', to: 'ldb', kind: 'bl', tray: 3.0,
+    voltage: '400 V', conductor: '4C x 150 mm2 Cu/PVC', circuits: 1, load: '320 A',
+    routeNote: `Up the building services lane of the LV riser at x 0.65, z ${R.lv[1]}, to the support floor lighting board`,
+    via: [[R.lv[0] + 0.65, 3.0, -13.2], [R.lv[0] + 0.65, 3.0, R.lv[1]], [R.lv[0] + 0.65, 14.4, R.lv[1]], [3, 14.4, R.lv[1]], [3, 14.4, 9]],
+    note: 'One riser feeder to a floor board, then a floor board to everything on that floor. Distribution is a tree, not a star, because a cable per load does not fit in a shaft.',
+    render: { type: 'tubes', n: 2, r: 0.05 }
+  },
+  {
+    id: 'BL-07', from: 'ldb', to: 'noc', kind: 'bl', tray: 2.6,
+    voltage: '400 V', conductor: '4C x 25 mm2 Cu/PVC', circuits: 1, load: '63 A',
+    routeNote: 'Tray along the support floor corridor to the NOC distribution board',
+    note: 'The NOC is a building load with an IT consequence: it has generator power, not UPS power, so during a transfer the video wall blinks and the operators lose sight of the plant for about ten seconds.',
+    render: { type: 'tubes', n: 2, r: 0.04 }
+  },
+  {
+    id: 'BL-08', from: 'ldb', to: 'lift', kind: 'bl', tray: 2.4,
+    voltage: '400 V', conductor: '4C x 35 mm2 Cu/PVC', circuits: 1, load: '80 A',
+    routeNote: 'Short run from the floor board to the lift machine room isolator',
+    note: 'The lift is how a 2.2 m rack reaches the staging area and how it reaches the hall. It is on the generator, because a data center with a rack stuck in the lobby is a data center that cannot grow.',
+    render: { type: 'tubes', n: 2, r: 0.04 }
   },
 
   /* ----------------------------- DC side ----------------------------- */
@@ -142,19 +214,18 @@ export const CABLES = [
     id: 'DC-01', from: 'pdumain', to: 'busway', kind: 'duct', tray: 3.0,
     voltage: '400 V', conductor: 'Busduct, 3,200 A',
     circuits: 2, load: '3,200 A',
-    routeNote: 'Main PDU to the overhead hall busway, one run per hall',
-    note: 'The hall busway. Power is tapped wherever a rack appears, so the hall can be reconfigured without pulling a single cable.',
-    render: { type: 'duct', w: 0.36, h: 0.24 }
+    routeNote: 'Main PDU to the overhead hall busduct, one run per hall',
+    note: 'The hall busduct. Power is tapped wherever a rack appears, so the hall can be reconfigured without pulling a single cable. This is the run that AI halls are built around.',
+    render: { type: 'duct', w: 0.46, h: 0.32 }
   },
   {
     id: 'DC-02', from: 'busway', to: 'rackpdu', kind: 'dc', tray: 1.4,
     voltage: '400 V, 3 ph + N + E', conductor: '4C x 25 mm2 flexible, 60 kW per feed',
     circuits: 1, load: '87 A per feed',
-    routeNote: 'Tap off box on the busway, flexible drop to the rack PDU',
+    routeNote: 'Tap off box on the busduct, flexible drop to the rack PDU',
     note: 'The last copper before the rack. Every tap box is metered, because this is where capacity planning actually happens.',
     render: { type: 'tubes', n: 2, r: 0.035 }
   },
-
   {
     id: 'DC-03', from: 'rackpdu', to: 'rack', kind: 'dc', tray: 0.45,
     voltage: '400 V to 48 V DC inside the rack', conductor: '4C x 25 mm2 flexible jumper, 0.9 m',
@@ -162,6 +233,34 @@ export const CABLES = [
     routeNote: 'Short flexible jumper from the rack PDU outlet to the rack power shelf',
     note: 'The last metre, and the one that gets unplugged. It is drawn because it is a real cable with a real bend radius, not because it is interesting.',
     render: { type: 'tubes', n: 2, r: 0.03 }
+  },
+
+  /* ------------------------ Fiber and comms -------------------------- */
+  {
+    id: 'FI-01', from: 'fibentry', to: 'odf', kind: 'fiber', tray: 2.6,
+    voltage: 'No power, optical', conductor: '2 x 48F OS2, carrier handover to ODF',
+    circuits: 2, load: 'n/a',
+    routeNote: 'Carrier handover cabinet to the optical distribution frame, in the same MMR',
+    note: 'Two carriers, two physical entries, because a fiber cut in a street cabinet is the most common way a working data center loses its customers without losing power.',
+    render: { type: 'tubes', n: 2, r: 0.022 }
+  },
+  {
+    id: 'FI-02', from: 'odf', to: 'noc', kind: 'fiber', tray: 2.6,
+    voltage: 'No power, optical', conductor: '24F OS2 singlemode in tray',
+    circuits: 2, load: 'n/a',
+    routeNote: `ODF up the fiber riser at x ${R.fiber[0]}, z ${R.fiber[1]}, to the NOC on the support floor`,
+    via: [[R.fiber[0] - 0.4, 8.6, 10], [R.fiber[0] - 0.4, 8.6, R.fiber[1]], [R.fiber[0] - 0.4, 14.6, R.fiber[1]], [15.5, 14.6, R.fiber[1]], [15.5, 14.6, 11]],
+    note: 'The same shaft carries the monitoring network to the room where somebody is paid to look at it. A NOC on a different floor from the MMR only works if this cable exists.',
+    render: { type: 'tubes', n: 2, r: 0.022 }
+  },
+  {
+    id: 'FI-03', from: 'epms', to: 'odf', kind: 'fiber', tray: 2.6,
+    voltage: 'No power, optical', conductor: '12F OS2, Modbus TCP over fiber',
+    circuits: 2, load: 'n/a',
+    routeNote: `EPMS outstations on the plant floor, up the fiber riser at x ${R.fiber[0]}, z ${R.fiber[1]}, to the ODF`,
+    via: [[R.fiber[0] + 0.4, 3.0, -5], [R.fiber[0] + 0.4, 3.0, R.fiber[1]], [R.fiber[0] + 0.4, 8.6, R.fiber[1]], [-24, 8.6, R.fiber[1]], [-24, 8.6, 10]],
+    note: 'Metering data leaves the plant room on glass, not copper. A 400 V fault on a copper signal cable travels into the monitoring system and takes the screen down with it.',
+    render: { type: 'tubes', n: 2, r: 0.022 }
   },
 
   /* ----------------------------- Earthing ---------------------------- */

@@ -17,6 +17,22 @@ Every capacity in the model, checked against the load it actually carries. The p
 | Heat to water | 2,900 kW | racks, manifolds, CDUs |
 | Heat to air | 300 kW | network, storage, room losses |
 
+## Load split
+
+The site total is 4,000 kW, but it is not one number. The split below is what decides
+who gets a battery and who gets a four minute restart.
+
+| Load | Size | Source | Ride-through | Note |
+|---|---|---|---|---|
+| IT critical load | 3,200 kW | MSB, UPS, STS | zero seconds | dual corded racks, battery to generator |
+| Cooling plant (chillers, pumps, towers) | 640 kW | MDB-N, generator only | none | 4 minute restart, covered by thermal mass |
+| Air handling (CRAH fans) | 100 kW | MDB-N, generator only | none | airflow matters before chiller restart |
+| Building services (lighting, NOC, lift, security) | 60 kW | LDB-01, generator only | none | the NOC screen blinks during transfer |
+
+Building services total 800 kW, which is the 4,000 kW site load less the 3,200 kW IT
+load. Putting that 800 kW on the UPS would add roughly 900 kWh of battery to protect
+loads that do not need protecting, which is why the split exists.
+
 ## Sizing check
 
 | Equipment | Installed | Duty capacity | Load carried | Loading | Redundancy |
@@ -27,6 +43,10 @@ Every capacity in the model, checked against the load it actually carries. The p
 | UPS | 4 x 1,000 kW per bus | 4,000 kW per bus | 1,600 kW per bus | 40% | 2N |
 | Main PDU | 2,800 A per hall | 1,940 kVA | 1,684 kVA | 87% | dual output |
 | Busway | 3,200 A | 2,217 kVA | 1,684 kVA | 76% | dual run |
+| Busduct, transformer to MSB | 4,000 A | 2,771 kVA | 2,500 kVA | 90% | one per transformer |
+| Busduct riser, LV room to hall | 2 x 1,600 A | 2,217 kVA | 1,684 kVA | 76% | two lanes in one shaft |
+| Building services board (MDB-N) | 2,000 A | 1,385 kVA | 555 kVA | 40% | generator backed, no UPS |
+| Floor board (LDB-01) | 320 A | 222 kVA | 80 kVA | 36% | one riser feeder per floor |
 | Rack PDU | 2 x 60 kW | 120 kW | 100 kW | 83% | dual corded |
 | Generator | 3 x 2,500 kW | 5,000 kW with one out | 4,000 kW | 80% | N+1 |
 | Chiller | 3 x 1,800 kW | 3,600 kW | 2,900 kW | 81% | N+1 |

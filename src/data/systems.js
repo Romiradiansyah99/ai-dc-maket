@@ -13,9 +13,14 @@ export const SYSTEMS = [
       { id: 'source', name: 'Utility & Generation', items: ['pln', 'gardu', 'genset', 'fueltank'] },
       { id: 'mv', name: 'Medium Voltage Distribution', items: ['mvinc', 'metering', 'rmu', 'mvswg'] },
       { id: 'tx', name: 'Transformation', items: ['trafo'] },
-      { id: 'lv', name: 'Low Voltage Distribution', items: ['msb', 'pdb', 'db', 'apfc'] },
-      { id: 'backup', name: 'Transfer & Backup', items: ['ats', 'sts', 'ups', 'bbu'] },
-      { id: 'rackpwr', name: 'Rack Power', items: ['pdumain', 'busway', 'rackpdu'] },
+      {
+        id: 'itpwr', name: 'IT Critical Power (UPS backed)',
+        items: ['msb', 'pdb', 'db', 'apfc', 'ats', 'sts', 'ups', 'bbu', 'pdumain', 'busway', 'rackpdu']
+      },
+      {
+        id: 'bldgpwr', name: 'Building Services (generator only)',
+        items: ['mdbn', 'ldb']
+      },
       { id: 'earth', name: 'Earthing & Lightning', items: ['earth', 'lps'] }
     ]
   },
@@ -41,7 +46,7 @@ export const SYSTEMS = [
     id: 'it', name: 'IT Infrastructure', short: 'I',
     subsystems: [
       { id: 'rack', name: 'Racks', items: ['rack'] },
-      { id: 'network', name: 'Network & Cabling', items: ['odf', 'tray'] }
+      { id: 'network', name: 'Network & Cabling', items: ['fibentry', 'odf', 'tray'] }
     ]
   },
   {
@@ -56,10 +61,10 @@ export const SYSTEMS = [
   {
     id: 'fac', name: 'Facility & Operations', short: 'O',
     subsystems: [
-      { id: 'ops', name: 'Operations', items: ['noc'] },
+      { id: 'ops', name: 'Operations & Monitoring', items: ['noc', 'epms'] },
       { id: 'security', name: 'Security', items: ['security'] },
-      { id: 'staging', name: 'Staging', items: ['staging'] },
-      { id: 'support', name: 'Support Space', items: ['office'] }
+      { id: 'staging', name: 'Staging & Integration', items: ['staging'] },
+      { id: 'support', name: 'Support Space', items: ['office', 'lift'] }
     ]
   }
 ];
@@ -107,7 +112,7 @@ export const FLOWS = [
       { k: 'rmu', state: '20 kV ring', link: 'MV-04', note: 'Ring main unit upstream of the transformer, so one cable section can be isolated while the ring stays live.' },
       { k: 'mvswg', state: '20 kV bus', link: 'MV-05', note: 'MV lineup splits the supply to each transformer on a dedicated feeder, one breaker per transformer.' },
       { k: 'trafo', state: '400 V', link: 'MV-06', note: 'Step down, 20 kV to 400 V. Voltage falls, current rises, and the difference is paid in heat.' },
-      { k: 'msb', state: '400 V bus', link: 'LV-01', note: 'Main switchboard, 6,300 A per bus. The busduct you just followed carries 3,608 A per transformer, which is why it is a duct and not a cable.' },
+      { k: 'msb', state: '400 V bus', link: 'LV-01', note: 'Main switchboard, 6,400 A per bus. The busduct you just followed carries 3,608 A per transformer, which is why it is a duct and not a cable.' },
       { k: 'ups', state: 'AC to DC to AC', link: 'LV-08', note: 'Double conversion holds the IT load steady and covers the seconds the generator needs. The generator and ATS sit on the same bus, one cable away.' },
       { k: 'pdumain', state: '400 V', link: 'LV-12', note: 'Main PDU. The pulse climbed the LV busway riser at x 1.5 to get here, the only electrical route that crosses a floor.' },
       { k: 'busway', state: '400 V, 3,200 A', link: 'DC-01', note: 'Overhead busway: power can be moved without moving cable, which is what makes the hall reconfigurable.' },
@@ -131,6 +136,59 @@ export const FLOWS = [
       { k: 'chiller', state: '26 C entering, 32 C leaving', link: 'CHW-04', note: 'One branch per chiller, butterfly isolation at each. Three machines, N+1, sized for two and a half of flow.' },
       { k: 'coolingtower', state: 'rejection, 3 to 5 K approach', link: 'CND-01', note: 'The pulse went down into the buried condenser main and out to the tower yard. Evaporation rejects the heat, and everything the site consumes leaves here as vapour.' },
       { k: 'drycooler', state: 'free cooling below 25 C', link: 'FRE-01', note: 'A parallel path, not a series one: below roughly 25 C ambient the dry cooler carries the load and the chillers stop. The pipe lights up as an alternative, which is exactly what it is.' }
+    ]
+  },
+  {
+    id: 'outage',
+    name: 'Utility Failure & Generator Pickup',
+    blurb: 'What actually happens in the ninety seconds after the lights go out upstream.',
+    color: '#8A1F2B',
+    kind: 'cable',
+    nodes: [
+      {
+        k: 'pln', t: 't+0 s', state: 'Utility lost', link: null,
+        note: 'Both 20 kV feeders dead. Either the utility substation tripped, a feeder was dug through, or the grid is doing what grids do. From this second the site is on its own.'
+      },
+      {
+        k: 'ups', t: 't+0 s', state: 'IT load on battery', link: 'LV-12', at: 'from',
+        note: 'No interruption at the rack. The double conversion UPS was already carrying the load through its inverter, so the only change is that the rectifier stops charging and the battery starts discharging. The pulse you watched is the UPS output, and it never blinked.'
+      },
+      {
+        k: 'ats', t: 't+1 s', state: 'Transfer initiated', link: null,
+        note: 'The transfer switch controller sees loss of normal supply on both inputs — utility contactor open, no voltage, no frequency. It starts a timer and issues the engine start signal to all three generators at once, not in sequence.'
+      },
+      {
+        k: 'genset', t: 't+2 s', state: 'Cranking', link: null,
+        note: 'Three sets crank simultaneously. First engine to reach rated speed and voltage closes its breaker to the paralleling bus. Nine seconds is normal; twelve is slow but acceptable; thirty means somebody is walking to the yard with a torch.'
+      },
+      {
+        k: 'ats', t: 't+9 s', state: 'Emergency source available', link: 'LV-10', at: 'from',
+        note: 'Generator voltage and frequency inside window, so the ATS accepts the emergency source. The pulse ran inside the buried generator cables — the trench across the yard that everybody forgets until it floods.'
+      },
+      {
+        k: 'msb', t: 't+11 s', state: 'Site on generator', link: 'LV-11', at: 'from',
+        note: 'Transfer complete. The main switchboard is re-energised from the generators, the UPS goes back to charging, and the IT load never knew. Total outage seen by a GPU: zero seconds. Total outage seen by the chillers: eleven seconds, and they are still spinning down.'
+      },
+      {
+        k: 'mdbn', t: 't+20 s', state: 'Building load re-energised', link: 'BL-01', at: 'from',
+        note: 'This is the branch that was never on batteries. Building services come back on the generator with no ride-through at all: pumps, tower fans, CRAH fans, lighting, NOC. Everything downstream of this board saw a real gap in supply.'
+      },
+      {
+        k: 'chiller', t: 't+4 min', state: 'Chiller restart', link: 'BL-02', at: 'from',
+        note: 'Chillers restart last and slowest. Compressor start is 900 A per machine, and three of them on a cold generator is how a pickup turns into a second outage. The sequence staggers them, and the warm water loop buys the time: 32 racks of coolant holds the GPUs below throttle for roughly six minutes with no chillers running at all.'
+      },
+      {
+        k: 'ups', t: 't+10 min', state: 'Battery recharge', link: 'LV-08', at: 'to',
+        note: 'Load is stable, so the chargers pull the battery back up. Recharge is limited to about ten percent of capacity, because a fast recharge on a 3.2 MW site is another generator load step nobody needs during an outage.'
+      },
+      {
+        k: 'rack', t: 't+45 min', state: 'Steady state', link: 'DC-03', at: 'to',
+        note: 'Fully back to normal, except the fuel gauge. At 4 MW the site is burning about 840 litres an hour, and the 48 hour autonomy figure started counting at t+0 s.'
+      },
+      {
+        k: 'pln', t: 't+2 h', state: 'Utility restored, retransfer', link: null,
+        note: 'Supply returns. The ATS waits for a stability window — typically five minutes — before retransferring, then the generators run a cool down cycle and stop. If it retransferred on the first flicker, the site would bounce between sources until something broke.'
+      }
     ]
   }
 ];

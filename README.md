@@ -11,19 +11,21 @@ A three level, click through model of a **3.2 MW liquid cooled AI data center**,
 | | |
 |---|---|
 | Scope | Utility to silicon, and heat rejection back out |
-| Systems | 6 systems, 13 subsystems, 48 equipment types, 32 AI racks |
+| Systems | 6 systems, 13 subsystems, 53 equipment types, 32 AI racks |
 | Levels | L0 plant and yard, L1 white space, L2 support |
 | Walkthrough | Electrical path, 13 stages, one stage at a time |
-| Connections | 26 cables and busducts, 17 pipe runs, 4 riser shafts |
+| Connections | 38 cables and busducts, 17 pipe runs, 5 riser shafts |
 | Stack | Vanilla ES modules, three.js r160 vendored locally, no build step, no framework |
 
 ## What you can do with it
 
 - **Read the hierarchy.** The left rail is a real MEP tree: system, then subsystem, then equipment. Clicking a row flies the camera to the object and opens its panel.
 - **Isolate a level.** L0 is the plant and yard, L1 is the two data halls, L2 is support space. Exploded view separates the floors so the vertical risers become visible.
-- **Follow the path, on the cable.** Two guided walkthroughs, and neither invents a route: each stage is bound to a specific circuit in the schedule, and the animation is built from that circuit's own polyline. The pulse runs inside the tray, climbs the riser, passes through the duct bank and drops into the far equipment, because that is the geometry it was given. Electrical path, 13 stages, 20 kV to 48 V DC. Cooling water loop, 9 stages, cold plate to tower.
+- **Follow the path, on the cable.** Three guided walkthroughs, and none of them invents a route: each stage is bound to a specific circuit in the schedule, and the animation is built from that circuit's own polyline. The pulse runs inside the tray, climbs the riser, passes through the duct bank and drops into the far equipment, because that is the geometry it was given. Electrical path, 13 stages, 20 kV to 48 V DC. Cooling water loop, 9 stages, cold plate to tower. Utility failure, 11 stages, from the feeder tripping to the generators cooling down two hours later.
 - **Inspect equipment.** Every panel opens with a single sentence on what the thing actually does, then two visuals, then the engineering detail: function, design values, failure modes, commissioning checks and reference figures. The first visual is a model view rendered from that equipment's own geometry, so it always matches the object on screen. The second is a licensed reference photograph where one exists, with attribution.
-- **See the connections, not just the boxes.** Every electrical circuit is modelled: 26 cables and busducts routed from the actual equipment positions, in ladder trays with rungs and hanger rods to the slab, or buried in a duct bank. Click any cable to read its schedule.
+- **Two electrical systems, not one.** The panel tree splits power the way the building does. `IT Critical Power` is the UPS backed chain that ends at a GPU: switchboard, static transfer switch, UPS, PDU, busduct, rack PDU, with zero seconds of interruption. `Building Services` is everything downstream of the MDB-N: chillers, pumps, tower fans, CRAH fans, lighting, NOC, lift, generator backed with no battery at all. That fork is the reason a hall survives an outage and a chiller does not.
+- **The outage scenario, second by second.** Utility lost, battery, cranking, transfer, chiller restart, recharge, retransfer, with a time stamp on every stage. It is the part of the design that only exists on paper in most explanations, so it is drawn here instead.
+- **See the connections, not just the boxes.** Every electrical circuit is modelled: 38 cables and busducts routed from the actual equipment positions, in ladder trays with rungs and hanger rods to the slab, or buried in a duct bank. Click any cable to read its schedule.
 - **Navigate like SketchUp.** Left drag orbits. **Press and hold the scroll wheel and drag to pan**: no rotation, no zoom, just slide. Right drag and the arrow pad do the same, `Space` + drag also pans, the wheel zooms toward the cursor, `F` fits. Touch gets one finger orbit and two finger pan and zoom.
 - **Find the risers.** The shafts are modelled with corner posts, a frame at every slab, penetration sleeves and a label. The **Risers** view jumps straight to them.
 
@@ -122,14 +124,14 @@ src/scene/kit.js        primitive builder, geometry merging, pencil outlines
 src/scene/build.js      building shell, risers, and every equipment builder
 src/scene/flow.js       animated flow paths and travelling pulses
 src/data/systems.js     the hierarchy: systems, subsystems, walkthroughs
-src/data/cables.js      the cable schedule: 26 circuits, sizes, loads, route notes
+src/data/cables.js      the cable schedule: 38 circuits, sizes, loads, route notes
 src/scene/cables.js     routes and draws the connection layer from that schedule
 src/data/pipes.js       the pipe schedule: 17 runs, DN, medium, temperature, flow
 src/scene/pipes.js      routes and draws pipework, insulation, valves, supports, sleeves
 src/data/equipment-*.js the equipment catalogue and its content
 src/data/layout.js      site, levels, rooms, placements
 docs/                   capacity ledger, architecture notes, photo credits
-media/shots/            one rendered model view per equipment type (48)
+media/shots/            one rendered model view per equipment type (53)
 tools/fetch_photos.py   reference photo fetcher with licence capture
 tools/render_shots.mjs  headless renderer that regenerates media/shots
 tools/fetch_videos.py   resolves and verifies one YouTube reference per type
@@ -155,12 +157,30 @@ python3 -m http.server 8099
 
 WebGL required. three.js is vendored, so it also runs with no network access.
 
+## Checks
+
+Two headless checks, both run against the live scene rather than against the source,
+so they measure what the browser actually built.
+
+```bash
+# every vertical leg that crosses a slab must pass through a shaft
+node tools/check_risers.mjs 8099
+
+# how far the animated pulse strays from the cable it is describing
+node tools/flow_dev.mjs 0 8099     # 0 electrical, 1 cooling, 2 outage
+```
+
+`check_risers.mjs` fails on an unexplained floor penetration, an unused shaft, or a
+page error. `flow_dev.mjs` prints the maximum deviation in metres per stage. Current
+state on both walkthroughs: 0.112 m maximum, against a 0.17 m animation tube, so the
+pulse is still inside the cable it travels in.
+
 ## Content standards
 
 - Figures describe **this model**, not a vendor datasheet. Where a real project would differ, the panel says so.
 - Every equipment panel opens with one sentence explaining what the equipment is really for. If the sentence is not true, the detail below it does not matter.
 - Every equipment type has a **model view**: an isolated axonometric render produced by `tools/render_shots.mjs` from the same primitives the site draws, on paper stock, with no artistic licence. It cannot drift from the model because it is the model.
-- Reference photographs are a separate, stricter set: an image is kept only if it shows that exact equipment in a form recognisable for a data center. Anything ambiguous is dropped rather than kept as a lookalike, so 16 of 48 types carry a photograph and the rest carry the model view alone. Attribution is in [docs/PHOTO-CREDITS.md](docs/PHOTO-CREDITS.md).
+- Reference photographs are a separate, stricter set: an image is kept only if it shows that exact equipment in a form recognisable for a data center. Anything ambiguous is dropped rather than kept as a lookalike, so 16 of 53 types carry a photograph and the rest carry the model view alone. Attribution is in [docs/PHOTO-CREDITS.md](docs/PHOTO-CREDITS.md).
 - Every "Learn more" entry links to one specific video. Each video id was resolved from a data center qualified search and then verified through the YouTube oEmbed endpoint, so it resolves to a real, embeddable video rather than a search page.
 
 ## Limitations

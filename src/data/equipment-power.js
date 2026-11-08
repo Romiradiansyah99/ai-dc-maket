@@ -265,5 +265,29 @@ export const POWER = {
     tests: ['Continuity of air termination and down conductors', 'SPD status indicators after a storm season', 'Surge counter and replacement log'],
     refs: [['Class', 'III'], ['Down conductors', '2 minimum'], ['SPD', '3 stage coordination']],
     videos: [{ title: 'Lightning protection and surge devices', q: 'lightning protection system surge protection device coordination explained' }]
-  }
+  },
+
+  mdbn: {
+    tag: 'MDB-N', name: 'Building Services Board (MDB-N)', sys: 'elec', sub: 'bldgpwr',
+    short: '2,000 A, generator backed, no UPS',
+    philosophy: 'Not every load deserves a battery, and the ones that do not are the ones that decide whether the batteries matter.',
+    function: 'This is where the electrical system forks. Everything upstream of this board is on the IT critical path: UPS, static transfer switch, dual cord. Everything downstream is on the generator only, with no ride through at all. Chillers, primary pumps, tower fans, CRAH fans, lighting and the NOC all sit here. The design logic is simple arithmetic: 3.2 MW of IT load justifies a battery that costs more than the chillers, and 2.5 MW of compressors does not. The consequence is a four minute chiller restart, which the warm water loop is sized to cover.',
+    spec: [['Rating', '2,000 A, 400 V'], ['Source', 'generator backed, no UPS'], ['Loads', 'chillers, pumps, towers, CRAH, lighting, NOC'], ['Selectivity', 'one level below the main switchboard, fully discriminated']],
+    risks: ['Chiller starting current tripping the generator on pickup', 'Non critical load shed missing, so the generator is overloaded before the IT load transfers', 'Building load and IT load on the same board, so a chiller fault takes the hall with it'],
+    tests: ['Load step test with the chillers starting in sequence', 'Non critical load shed and reconnection sequence', 'Discrimination check against the main switchboard protection'],
+    refs: [['Building load', '0.8 MW'], ['IT load', '3.2 MW'], ['Chiller restart', '4 min']],
+    videos: [{ title: 'Critical vs non critical power in a data center', q: 'data center critical non-critical power distribution redundancy explained' }]
+  },
+
+  ldb: {
+    tag: 'LDB-01', name: 'Floor Lighting and Small Power Board', sys: 'elec', sub: 'bldgpwr',
+    short: '320 A, one board per floor',
+    philosophy: 'Distribution is a tree, not a star. A cable per load does not fit in a shaft, so one feeder climbs and everything on the floor taps off it.',
+    function: 'Fed by a single riser cable from the building services board, then distributes to lighting, small power, the NOC, the lift and the security systems on the support floor. The reason it exists as a separate board rather than as more ways in the main switchboard is fault containment and cable economy: a fault in a floor board takes one floor, not the building, and the riser carries 320 A instead of 2,000.',
+    spec: [['Rating', '320 A, 400 V'], ['Fed by', '4C x 150 mm2 from MDB-N'], ['Serves', 'lighting, small power, NOC, lift, security'], ['Metering', 'per way, reported to EPMS']],
+    risks: ['Floor board fed from a single cable with no spare capacity for fit out', 'Lighting and lift on the same board, so a lighting fault strands the lift', 'No surge protection, so a lightning event takes out the NOC screens'],
+    tests: ['Insulation resistance and continuity on every final circuit', 'RCD trip test at the board and at the furthest outlet', 'Phase rotation and voltage drop at the furthest point'],
+    refs: [['Riser feeder', '320 A'], ['Voltage drop limit', '4 percent'], ['RCD', '30 mA for sockets']],
+    videos: [{ title: 'Final distribution boards explained', q: 'distribution board final circuit MCB RCD explained electrical installation' }]
+  },
 };

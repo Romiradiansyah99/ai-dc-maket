@@ -198,28 +198,68 @@ const KINDS = {
   },
 
   containment(b) {
+    // Cold aisle containment is a vertical structure: glazed end doors, posts on every
+    // rack bay, and a roof panel that sits on the rack tops. A flat plate floating
+    // above the aisle is not a containment, it is a ceiling tile.
     const rows = HALL.rows;
     const z0 = rows[0], z1 = rows[1];
-    const depth = (z1 - z0) + HALL.rackD + 0.4;
+    const depth = (z1 - z0) + HALL.rackD + 0.30;
     const len = HALL.racksPerRow * HALL.rackPitch;
     const zc = (z0 + z1) / 2;
-    b.box(len, 0.08, depth, C.fill, { pos: [0, HALL.aisle.h, zc], edge: true, amp: 0.006 });
-    for (const zz of [zc - depth / 2, zc + depth / 2]) {
-      b.box(len, 0.06, 0.06, C.accent, { pos: [0, HALL.aisle.h, zz], edge: false });
+    const h = HALL.rackH + 0.10;
+
+    // roof, in panels per bay, landing on the rack tops
+    for (let i = 0; i < HALL.racksPerRow; i++) {
+      const x = -len / 2 + (i + 0.5) * HALL.rackPitch;
+      b.box(HALL.rackPitch - 0.06, 0.05, depth, C.fill, {
+        pos: [x, h, zc], edge: true, amp: 0.004
+      });
     }
-    for (let i = 0; i <= 4; i++) {
-      b.box(0.06, HALL.aisle.h, 0.06, C.dark, { pos: [-len / 2 + (i * len) / 4, HALL.aisle.h / 2, zc], edge: false });
+
+    // vertical end walls: frame, glazed door, closer
+    for (const sx of [-1, 1]) {
+      const x = sx * (len / 2);
+      for (const sz of [-1, 1]) {
+        b.box(0.07, h, 0.07, C.dark, { pos: [x, h / 2, zc + (sz * depth) / 2], edge: true, amp: 0.002 });
+      }
+      b.box(0.07, 0.07, depth, C.dark, { pos: [x, h - 0.035, zc], edge: false });
+      b.box(0.05, h - 0.28, depth - 0.18, C.ghost, { pos: [x, (h - 0.28) / 2, zc], edge: true, amp: 0.002 });
+      // door mullion and handle
+      b.box(0.06, h - 0.28, 0.05, C.dark, { pos: [x, (h - 0.28) / 2, zc], edge: false });
+      b.box(0.07, 0.85, 0.04, C.steel, { pos: [x + sx * 0.05, 1.15, zc - depth * 0.3], edge: false });
     }
+
+    // vertical posts at every rack bay, both sides
+    for (let i = 0; i <= HALL.racksPerRow; i++) {
+      const x = -len / 2 + i * HALL.rackPitch;
+      for (const sz of [-1, 1]) {
+        b.box(0.06, h, 0.06, C.dark, { pos: [x, h / 2, zc + (sz * depth) / 2], edge: false });
+      }
+    }
+
+    // raised floor in the aisle
+    b.box(len - 0.25, 0.03, depth - 0.25, C.fill2, { pos: [0, 0.016, zc], edge: true, amp: 0.003 });
   },
 
   busway(b, o) {
     const len = (o && o.len) || 13;
-    b.box(len, 0.28, 0.34, C.accent, { pos: [0, 0, 0], edge: true, amp: 0.006 });
+    // copper enclosure, bolted joints, and a metered tap off box per rack position
+    b.box(len, 0.34, 0.42, C.copper, { pos: [0, 0, 0], edge: true, amp: 0.005 });
+    for (let d = 3; d < len - 0.3; d += 3) {
+      b.box(0.14, 0.40, 0.50, C.dark, { pos: [-len / 2 + d, 0, 0], edge: true, amp: 0.002 });
+    }
     const n = Math.floor(len / 1.65);
     for (let i = 0; i < n; i++) {
       const x = -len / 2 + 0.9 + i * 1.65;
-      b.box(0.34, 0.42, 0.26, C.steel, { pos: [x, -0.34, 0], edge: true });
-      b.cyl(0.05, 0.9, C.dark, { pos: [x, -0.4, 0.2], rot: [0.3, 0, 0], edge: false });
+      b.box(0.36, 0.40, 0.30, C.steel, { pos: [x, -0.36, 0], edge: true });
+      b.cyl(0.05, 0.95, C.dark, { pos: [x, -0.42, 0.22], rot: [0.3, 0, 0], edge: false });
+      b.box(0.06, 0.10, 0.02, C.accent, { pos: [x + 0.12, -0.30, 0.16], edge: false });
+    }
+    // hangers to the slab
+    for (let d = 1.5; d < len; d += 3) {
+      for (const s2 of [-1, 1]) {
+        b.cyl(0.028, 0.6, C.dark, { pos: [-len / 2 + d, 0.35, s2 * 0.18], edge: false, sides: 6 });
+      }
     }
   },
 
@@ -404,6 +444,33 @@ const KINDS = {
     b.box(1.9, 0.05, 0.05, C.dark, { pos: [0, 2.2, 0], edge: false });
   },
 
+  lift(b) {
+    b.box(2.3, 0.12, 2.3, C.dark, { pos: [0, 0.06, 0] });
+    for (const x of [-1.0, 1.0]) for (const z of [-1.0, 1.0]) {
+      b.box(0.08, 2.5, 0.08, C.steel, { pos: [x, 1.25, z], edge: false });
+    }
+    b.box(1.9, 2.3, 1.9, C.fill, { pos: [0, 1.2, 0] });
+    for (const x of [-0.47, 0.47]) {
+      b.box(0.9, 2.05, 0.07, C.steel, { pos: [x, 1.05, 1.0], edge: true, amp: 0.003 });
+    }
+    b.box(0.05, 2.05, 0.05, C.dark, { pos: [0, 1.05, 1.04], edge: false });
+    b.box(2.1, 0.07, 0.34, C.dark, { pos: [0, 0.035, 1.2], edge: false });
+    b.box(0.12, 0.24, 0.06, C.accent, { pos: [1.28, 1.15, 1.0], edge: false });
+    // machine room package above the shaft
+    b.cyl(0.32, 0.8, C.dark, { pos: [0, 2.95, 0], sides: 12 });
+    b.box(1.4, 0.3, 1.2, C.fill2, { pos: [0, 3.5, 0] });
+  },
+
+  fibentry(b) {
+    b.box(1.8, 0.14, 0.9, C.dark, { pos: [0, 0.07, 0] });
+    b.box(1.7, 1.9, 0.8, C.steel, { pos: [0, 1.02, 0], amp: 0.01 });
+    for (let i = 0; i < 8; i++) {
+      b.box(0.9, 0.05, 0.04, C.accent, { pos: [0, 1.05 + i * 0.11, 0.42], edge: false });
+    }
+    b.box(1.2, 0.28, 0.02, C.fill2, { pos: [0, 1.72, 0.41], edge: false });
+    for (const x of [-0.55, 0.55]) b.cyl(0.09, 0.5, C.dark, { pos: [x, 2.05, 0], edge: false });
+  },
+
   wetpipe(b) { this.preaction(b); }
 };
 
@@ -436,7 +503,12 @@ const PLACE = {
   phe: { kind: 'phe', floor: 'L0', spots: [[-2.4, -5, 0], [-2.4, -1.6, 0]] },
   cleanagent: { kind: 'cleanagent', floor: 'L0', spots: [[9.6, -13.2, 0]] },
   firepump: { kind: 'firepump', floor: 'L0', spots: [[8.2, -2.4, 0]] },
-  noc: { kind: 'noc', floor: 'L0', spots: [[17.6, -3.4, 0]] },
+  noc: { kind: 'noc', floor: 'L2', spots: [[15.5, 11, 0]] },
+  epms: { kind: 'lineup', floor: 'L0', spots: [[17.5, -5, 0]], opt: { n: 2, w: 0.9, h: 2.0 } },
+  mdbn: { kind: 'lineup', floor: 'L0', spots: [[1.6, -13.2, 0]], opt: { n: 3, w: 0.9, h: 2.1 } },
+  ldb: { kind: 'lineup', floor: 'L2', spots: [[3, 9, 0]], opt: { n: 2, w: 0.85, h: 1.9 } },
+  lift: { kind: 'lift', floor: 'L0', spots: [[6.6, 13.5, 0]] },
+  fibentry: { kind: 'fibentry', floor: 'L1', spots: [[-20.5, 10, 0]] },
   security: { kind: 'security', floor: 'L0', spots: [[2, 16, 0]] },
   earth: { kind: 'earth', floor: 'L0', spots: [[-33, 14, 0]] },
   coolingtower: { kind: 'coolingtower', floor: 'L0', spots: [[1.5, -32, 0], [9.0, -32, 0]] },
@@ -444,7 +516,7 @@ const PLACE = {
 
   odf: { kind: 'odf', floor: 'L1', spots: [[-24, 10, 0]] },
   tray: { kind: 'tray', floor: 'L1', spots: [[-9.5, 10, 0]] },
-  pdumain: { kind: 'lineup', floor: 'L1', spots: [[1.4, 12.6, Math.PI / 2]], opt: { n: 3, w: 0.9, h: 2.2 } },
+  pdumain: { kind: 'lineup', floor: 'L1', spots: [[13, 11, 0]], opt: { n: 3, w: 0.92, h: 2.2 } },
   busway: { kind: 'busway', floor: 'L1', spots: [[-15.5, -9.75, 0, 3.3], [15.5, -9.75, 0, 3.3]], opt: { len: 13.2 } },
   manifold: { kind: 'manifold', floor: 'L1', spots: [[-15.5, -9.75, 0, 2.75], [15.5, -9.75, 0, 2.75]], opt: { len: 13.2 } },
   containment: { kind: 'containment', floor: 'L1', spots: [[-15.5, -9.75, 0, 0], [15.5, -9.75, 0, 0]] },
@@ -557,19 +629,9 @@ function addShell(root) {
 
 function addRisers(root) {
   const b = new Builder(2);
-  for (const r of RISERS) {
-    const len = r.to - r.from;
-    const y = r.from + len / 2;
-    if (r.kind === 'busway') {
-      b.box(0.4, len, 0.4, C.accent, { pos: [r.x, y, r.z], edge: true, amp: 0.004 });
-    } else if (r.kind === 'pipe') {
-      // water and fire risers are built by the pipe layer, from the pipe schedule,
-      // so they connect to something instead of being a decorative shaft
-      continue;
-    } else {
-      b.box(0.75, len, 0.3, C.fill2, { pos: [r.x, y, r.z], edge: true, amp: 0.004 });
-    }
-  }
+  // The shaft is a hole, not a decoration. Every service inside it is drawn by the
+  // cable, pipe and fiber layers from their own schedules, in its own lane, so what
+  // you see in the shaft is what is actually installed there.
 
   // Shaft enclosure: four corner angles and a frame at every slab, so a riser reads
   // as a shaft passing through floors rather than a line floating in the building.
@@ -587,6 +649,14 @@ function addRisers(root) {
       for (const s2 of [-1, 1]) {
         b.box(2 * S, 0.05, 0.05, C.dark, { pos: [r.x, lv.y + 0.03, r.z + s2 * S], edge: false });
         b.box(0.05, 0.05, 2 * S, C.dark, { pos: [r.x + s2 * S, lv.y + 0.03, r.z], edge: false });
+      }
+      // sleeve through the slab: the hole the service actually passes through
+      b.box(1.05, 0.1, 1.05, C.ghost, { pos: [r.x, lv.y + 0.02, r.z], edge: true, amp: 0.002 });
+    }
+    if (r.kind === 'lift') {
+      for (const s2 of [-1, 1]) {
+        b.box(0.06, len, 0.12, C.steel, { pos: [r.x + s2 * 0.75, midY, r.z], edge: false });
+        b.box(0.06, len, 0.12, C.steel, { pos: [r.x, midY, r.z + s2 * 0.75], edge: false });
       }
     }
   }

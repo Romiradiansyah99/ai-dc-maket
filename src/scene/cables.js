@@ -8,15 +8,17 @@
 // that way either.
 import * as THREE from 'three';
 import { Builder, C } from './kit.js';
-import { LEVELS } from '../data/layout.js';
+import { LEVELS, BURIED } from '../data/layout.js';
 import { CABLES } from '../data/cables.js';
 
 const COLOR = {
-  mv: 0x8A1F2B,
-  lv: 0x2A3340,
-  dc: 0x2E6FD0,
+  mv: 0x8A1F2B,      // medium voltage
+  lv: 0x2A3340,      // IT critical power
+  dc: 0x2E6FD0,      // rack power
+  bl: 0x4A6B3A,      // building services, generator backed, not UPS backed
+  fiber: 0x7A4FA0,   // structured cabling
   earth: 0x0E7E88,
-  duct: 0xB6C5D8
+  duct: 0xB4713C     // copper busduct, drawn as copper
 };
 
 const floorY = (id) => (LEVELS.find((l) => l.id === id) || LEVELS[0]).y;
@@ -57,11 +59,12 @@ function routeFor(site, def) {
 
   const buried = def.tray === 'buried';
   const fy = floorY((site.byKey[def.from][0] || {}).floor || 'L0');
-  const elev = buried ? 0.55 : fy + (def.tray || 3);
+  // Buried means below grade. A duct bank at +0.55 m is a cable lying on the lawn.
+  const elev = buried ? (def.kind === 'mv' ? BURIED.mv : BURIED.cable) : fy + (def.tray || 3);
 
-  // buried runs leave the equipment at grade, not from the top of the enclosure
-  const start = buried ? new THREE.Vector3(a.x, 0.5, a.z) : a.clone();
-  const end = buried ? new THREE.Vector3(b.x, 0.5, b.z) : b.clone();
+  // buried runs leave the equipment at floor level and dive into the trench
+  const start = buried ? new THREE.Vector3(a.x, 0.15, a.z) : a.clone();
+  const end = buried ? new THREE.Vector3(b.x, 0.15, b.z) : b.clone();
 
   let raw;
   if (def.via && def.via.length) {
@@ -133,6 +136,45 @@ function addTray(b, a, c, w = 0.46, y, ceilY) {
   }
 }
 
+// A busduct is not a cable: it is a rigid copper enclosure in three metre lengths,
+// bolted joint by joint, hung from the slab and tapped wherever a load appears.
+// Drawing it as a plain box is why it disappeared against the structure.
+function addBusduct(b, a, c, w, h, colour) {
+  const len = a.distanceTo(c);
+  if (len < 0.12) return;
+  const dx = Math.abs(c.x - a.x), dy = Math.abs(c.y - a.y), dz = Math.abs(c.z - a.z);
+  const cx = (a.x + c.x) / 2, cy = (a.y + c.y) / 2, cz = (a.z + c.z) / 2;
+  const vertical = dy > dx + dz;
+  const alongX = dx >= dz;
+
+  if (vertical) b.box(w, len, h, colour, { pos: [cx, cy, cz], edge: true, amp: 0.002 });
+  else if (alongX) b.box(len, h, w, colour, { pos: [cx, cy, cz], edge: true, amp: 0.002 });
+  else b.box(w, h, len, colour, { pos: [cx, cy, cz], edge: true, amp: 0.002 });
+
+  const dir = new THREE.Vector3(c.x - a.x, c.y - a.y, c.z - a.z).normalize();
+  // bolted joints every three metres
+  for (let d = 3; d < len - 0.4; d += 3) {
+    const p = a.clone().addScaledVector(dir, d);
+    if (vertical) b.box(w * 1.18, 0.14, h * 1.18, C.dark, { pos: [p.x, p.y, p.z], edge: true, amp: 0.001 });
+    else if (alongX) b.box(0.14, h * 1.18, w * 1.18, C.dark, { pos: [p.x, p.y, p.z], edge: true, amp: 0.001 });
+    else b.box(w * 1.18, h * 1.18, 0.14, C.dark, { pos: [p.x, p.y, p.z], edge: true, amp: 0.001 });
+  }
+  // hangers on horizontal runs
+  if (!vertical) {
+    const n = Math.max(1, Math.round(len / 3));
+    for (let i = 1; i <= n; i++) {
+      const p = a.clone().addScaledVector(dir, (len * i) / (n + 1));
+      for (const s2 of [-1, 1]) {
+        const off = alongX ? [0, 0, s2 * w * 0.62] : [s2 * w * 0.62, 0, 0];
+        b.cyl(0.028, 0.55, C.dark, { pos: [p.x + off[0], p.y + h / 2 + 0.28, p.z + off[2]], edge: false, sides: 6 });
+      }
+      b.box(alongX ? 0.1 : w * 1.4, 0.05, alongX ? w * 1.4 : 0.1, C.dark, {
+        pos: [p.x, p.y + h / 2 + 0.02, p.z], edge: false
+      });
+    }
+  }
+}
+
 // A duct bank for buried runs: a shallow enclosure the cables sit inside.
 function addDuctBank(b, a, c, y) {
   const dx = c.x - a.x, dz = c.z - a.z;
@@ -156,18 +198,7 @@ function buildOne(site, def) {
 
   if (render.type === 'duct') {
     for (let i = 1; i < points.length; i++) {
-      const a = points[i - 1], c = points[i];
-      const dy = Math.abs(c.y - a.y);
-      const len = a.distanceTo(c);
-      if (len < 0.1) continue;
-      const cx = (a.x + c.x) / 2, cy = (a.y + c.y) / 2, cz = (a.z + c.z) / 2;
-      if (dy > Math.abs(c.x - a.x) + Math.abs(c.z - a.z)) {
-        b.box(render.w, len, render.h, C.steel, { pos: [cx, cy, cz], edge: true, amp: 0.003 });
-      } else if (Math.abs(c.x - a.x) > Math.abs(c.z - a.z)) {
-        b.box(len, render.h, render.w, C.steel, { pos: [cx, cy, cz], edge: true, amp: 0.003 });
-      } else {
-        b.box(render.w, render.h, len, C.steel, { pos: [cx, cy, cz], edge: true, amp: 0.003 });
-      }
+      addBusduct(b, points[i - 1], points[i], render.w, render.h, COLOR.duct);
     }
   } else {
     const n = render.n || 2;

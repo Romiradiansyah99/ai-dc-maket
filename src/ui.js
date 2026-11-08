@@ -381,7 +381,9 @@ export class Walk {
           ${FLOWS.map((x) => `<button class="w-tab${x.id === this.flowId ? ' on' : ''}" data-flow="${x.id}">${x.name}</button>`).join('')}
         </div>
         <div class="w-narr">
-          <span class="w-state">${this.step >= 0 ? f.nodes[this.step].state : f.blurb}</span>
+          <span class="w-state">${this.step >= 0
+            ? (f.nodes[this.step].t ? `<i class="w-clock">${f.nodes[this.step].t}</i>` : '') + f.nodes[this.step].state
+            : f.blurb}</span>
           <span class="w-note">${this.step >= 0 ? f.nodes[this.step].note : ''}</span>
         </div>
       </div>

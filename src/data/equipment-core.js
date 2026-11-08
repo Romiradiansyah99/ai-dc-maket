@@ -156,5 +156,41 @@ export const CORE = {
     tests: ['Access path walkthrough', 'Noise level measurement at the boundary', 'Confirm office is on normal power, not UPS'],
     refs: [['Capacity', '30'], ['Power', 'normal'], ['Zone', 'outside secure']],
     videos: [{ title: 'Data center facility tour', q: 'data center tour facility operations explained' }]
-  }
+  },
+
+  epms: {
+    tag: 'EPMS-01', name: 'EPMS Outstation and Power Metering', sys: 'fac', sub: 'ops',
+    short: 'Every breaker, every kW, one time base',
+    philosophy: 'If it is not metered, it is not managed, and a capacity number nobody can prove is a sales number.',
+    function: 'Collects power, energy, power quality and breaker status from every board, UPS, PDU and tap off box on site, then publishes it northbound to the NOC. The engineering point is the time base: a kW figure read from the switchboard and a kW figure read from the rack PDU are only comparable if they share a clock, which is why the outstations are time synchronised and the meters are class 0.5S rather than class 1.',
+    spec: [['Protocol', 'Modbus TCP and IEC 61850'], ['Meter class', '0.5S on utility boundary'], ['Points', 'about 4,000 per site'], ['Time base', 'NTP synchronised, 1 s resolution']],
+    risks: ['Metering on copper signal cable, so a fault takes the monitoring down with the power', 'Points mapped to the wrong breaker, so the operator chases the wrong panel', 'No historian, so the incident cannot be reconstructed afterwards'],
+    tests: ['Point to point verification against a reference meter', 'Alarm and event time stamp accuracy', 'Failover test with the primary server offline'],
+    refs: [['Points', '4,000'], ['Meter class', '0.5S'], ['Resolution', '1 s']],
+    videos: [{ title: 'Power monitoring in data centers', q: 'data center power monitoring EPMS meter Modbus explained' }]
+  },
+
+  fibentry: {
+    tag: 'CE-01', name: 'Carrier Handover and Fiber Entry', sys: 'it', sub: 'network',
+    short: 'Two carriers, two physical routes',
+    philosophy: 'The most common way a working data center loses its customers is not power. It is a digger in a street two kilometres away.',
+    function: 'The boundary where carrier fiber becomes the site responsibility. Two carriers on two physically separate routes, terminating in separate cabinets, because two fibers in the same duct are one fiber. From here the fiber crosses to the optical distribution frame and is patched to the halls.',
+    spec: [['Carriers', '2, diverse physical routes'], ['Entry', 'separate ducts, separate manholes'], ['Termination', '2 x 48F OS2 to ODF'], ['Protection', 'diverse path to the meet me room']],
+    risks: ['Both carriers actually sharing one duct despite the contract saying otherwise', 'Fiber entry below the flood level with no sealed penetration', 'Patch records drifting from reality within a year'],
+    tests: ['Optical loss budget end to end on every strand', 'Diversity survey with photographic evidence of both routes', 'Failover from carrier A to carrier B with live traffic'],
+    refs: [['Strands', '2 x 48F'], ['Routes', '2, surveyed'], ['Loss budget', 'under 3 dB']],
+    videos: [{ title: 'Fiber entry and carrier diversity', q: 'data center fiber entry MMR carrier diversity meet me room explained' }]
+  },
+
+  lift: {
+    tag: 'LIFT-01', name: 'Goods and Passenger Lift', sys: 'fac', sub: 'support',
+    short: '2,500 kg goods car, generator backed',
+    philosophy: 'A rack weighs a tonne and lives on the upper floor. The lift is data center infrastructure that nobody puts in the redundancy calculation.',
+    function: 'Moves equipment from the loading bay to staging and from staging to the halls. The goods car is sized for a fully populated rack plus its pallet, and the machine room sits above the shaft. It runs on the generator, because during an outage is exactly when a failed rack needs to leave the building, and it has a manual lowering arrangement for the case where the generator is the thing that failed.',
+    spec: [['Capacity', '2,500 kg goods car'], ['Serves', 'L0 to L2, all levels'], ['Power', 'MDB-N, generator backed'], ['Standby', 'manual lowering, battery rescue descent']],
+    risks: ['Car too small for a populated rack, so racks are stripped to move them', 'Lift on a board that sheds on generator overload', 'No landing door interlock maintenance, so the shaft becomes an access route'],
+    tests: ['Load test at 125 percent rated capacity', 'Rescue descent with normal power isolated', 'Door interlock and levelling accuracy at every landing'],
+    refs: [['Capacity', '2,500 kg'], ['Levels', '3'], ['Rescue', 'manual, battery backed']],
+    videos: [{ title: 'Goods lift in a data center', q: 'data center goods lift equipment delivery staging rack movement' }]
+  },
 };

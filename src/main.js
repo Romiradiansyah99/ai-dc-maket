@@ -83,6 +83,18 @@ for (const g of Object.values(site.shell.groups)) {
   });
 }
 
+// Grade is drawn as a translucent slab. Buried services are below it, and a solid
+// white slab would make the duct banks, trenches and earth ring invisible.
+if (site.shell.ground) {
+  site.shell.ground.traverse((o) => {
+    if (!o.isMesh || !o.material) return;
+    o.material = o.material.clone();
+    o.material.transparent = true;
+    o.material.opacity = 0.34;
+    o.material.depthWrite = false;
+  });
+}
+
 const flow = new FlowLayer(scene);
 
 const state = {
@@ -93,6 +105,7 @@ const state = {
   cables: true,
   pipes: true,
   structure: true,
+  grade: true,
   selected: null,
   hovered: null
 };
@@ -342,14 +355,18 @@ const panel = new Panel(document.getElementById('panel'), {
 // Resolve a walkthrough stage into the real geometry of the connection it names.
 // Direction is taken from the previous stage, so the pulse always travels the way
 // the current flows, not the way the schedule happens to be written.
-function segmentFor(prevKey, link) {
+function segmentFor(prevKey, link, at) {
   if (!link) return null;
   const src = cables.byId[link] || pipes.byId[link];
   if (!src) { console.warn('walkthrough link not found', link); return null; }
   const def = src.def;
   let pts = src.points;
   let connected = true;
-  if (def.from === prevKey) {
+  if (at === 'to') {
+    pts = pts.slice().reverse();
+  } else if (at === 'from') {
+    // as scheduled
+  } else if (def.from === prevKey) {
     // already pointing the right way
   } else if (def.to === prevKey) {
     pts = pts.slice().reverse();
@@ -361,7 +378,7 @@ function segmentFor(prevKey, link) {
 
 const walk = new Walk(document.getElementById('walk'), {
   onStart: (f) => {
-    const segs = f.nodes.map((n, i) => (i === 0 ? null : segmentFor(f.nodes[i - 1].k, n.link)));
+    const segs = f.nodes.map((n, i) => (i === 0 ? null : segmentFor(f.nodes[i - 1].k, n.link, n.at)));
     flow.build(f, segs);
     if (state.level !== 'ALL') setLevel('ALL');
   },
@@ -379,7 +396,7 @@ const walk = new Walk(document.getElementById('walk'), {
     }
     select(n.k);
     document.getElementById('status').textContent =
-      `${f.name} · ${i + 1}/${f.nodes.length} · ${n.state}`;
+      `${f.name} · ${i + 1}/${f.nodes.length}${n.t ? ' · ' + n.t : ''} · ${n.state}`;
   },
   onStop: () => {
     flow.setVisible(false);
@@ -406,6 +423,10 @@ document.querySelectorAll('#views button').forEach((b) => {
     } else nav.view(b.dataset.view);
   };
 });
+document.getElementById('chkGrade').onchange = (e) => {
+  state.grade = e.target.checked;
+  if (site.shell.ground) site.shell.ground.visible = state.grade;
+};
 document.getElementById('chkRoof').onchange = (e) => { state.roof = e.target.checked; applyDisplay(); };
 document.getElementById('chkCables').onchange = (e) => {
   state.cables = e.target.checked;
@@ -426,29 +447,6 @@ document.getElementById('chkPaper').onchange = (e) => {
 };
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') deselect();
-});
-
-/* pad placement: it sits above the walkthrough bar, and must never be covered by it */
-function placePad() {
-  const walkEl = document.getElementById('walk');
-  const pad = document.getElementById('pad');
-  if (!walkEl || !pad) return;
-  const h = walkEl.getBoundingClientRect().height;
-  pad.style.bottom = (34 + h + 12) + 'px';
-}
-window.addEventListener('resize', placePad);
-
-document.querySelectorAll('#pad button').forEach((b) => {
-  b.onclick = () => {
-    if (b.dataset.pan) {
-      const [fx, fy] = b.dataset.pan.split(',').map(Number);
-      nav.panStep(fx, fy);
-    } else if (b.dataset.zoom === 'in') {
-      nav.zoomTo(new THREE.Vector2(0, 0), 1.25);
-    } else {
-      nav.zoomTo(new THREE.Vector2(0, 0), 0.8);
-    }
-  };
 });
 
 const help = document.getElementById('help');
@@ -483,7 +481,6 @@ function tick() {
 
 function boot() {
   applyDisplay();
-  placePad();
   nav.fit(62, new THREE.Vector3(0, 7, -4));
   nav.zoom = 0.56;
   flyTo(new THREE.Vector3(0, 7, -4), 0.56, 1);

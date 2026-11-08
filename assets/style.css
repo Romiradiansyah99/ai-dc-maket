@@ -320,30 +320,7 @@ body.has-selection #walk{right:var(--panel)}
 }
 
 /* pan and zoom pad, always available whatever the input device */
-#pad{
-  position:fixed;left:calc(var(--rail) + 14px);bottom:150px;z-index:11;
-  display:grid;grid-template-columns:repeat(3,26px);grid-auto-rows:26px;gap:3px;
-  background:rgba(255,255,255,.86);border:1px solid var(--line);padding:4px;
-  backdrop-filter:blur(6px);
-}
-#pad button{
-  border:1px solid var(--line2);background:#fff;color:var(--ink2);cursor:pointer;
-  font-family:var(--mono);font-size:10px;line-height:1;padding:0;
-  display:flex;align-items:center;justify-content:center;
-}
-#pad button:hover{border-color:var(--navy);color:var(--navy)}
-#pad button[data-pan="0,-1"]{grid-column:2;grid-row:1}
-#pad button[data-pan="-1,0"]{grid-column:1;grid-row:2}
-#pad button[data-pan="1,0"]{grid-column:3;grid-row:2}
-#pad button[data-pan="0,1"]{grid-column:2;grid-row:3}
-#pad button[data-zoom="in"]{grid-column:1;grid-row:3}
-#pad button[data-zoom="out"]{grid-column:3;grid-row:3}
-body.has-selection #pad{left:calc(var(--rail) + 14px);right:auto}
-@media (max-width:900px){ #pad{left:12px;bottom:170px} }
-
 /* hand tool */
-.pan-toggle.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-.pan-toggle{display:inline-flex;align-items:center;gap:5px}
 
 /* cable rows inside the equipment panel */
 .cablelist .cablerow{
@@ -445,3 +422,11 @@ body.has-selection #pad{left:calc(var(--rail) + 14px);right:auto}
   #panel{width:100%;top:auto;bottom:0;max-height:64vh;border-left:0;border-top:1px solid var(--line)}
   .lbl-room{font-size:7.5px}
 }
+
+/* walkthrough timing chip, used by the outage scenario */
+.w-clock{
+  display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;
+  text-transform:uppercase;background:#8A1F2B;color:#fff;padding:1.5px 5px;margin-right:7px;
+  vertical-align:1px;
+}
+.w-tabs{flex-wrap:wrap}
