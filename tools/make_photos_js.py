@@ -25,8 +25,8 @@ open(os.path.join(ROOT, 'src/data/photos.js'), 'w').write('\n'.join(lines) + '\n
 
 rows = ['# Photo credits', '',
         'Reference photographs are the property of their authors, used here under the licence shown.',
-        'Each image is the lead image of the linked article and was checked against the equipment it illustrates.', '',
-        '| Equipment | Source article | Author | Licence |', '|---|---|---|---|']
+        'Each image was reviewed against the equipment it illustrates before being included.', '',
+        '| Equipment | Title | Author | Licence |', '|---|---|---|---|']
 for k in sorted(data):
     r = data[k]
     if not os.path.exists(r['file']):

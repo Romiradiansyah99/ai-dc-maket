@@ -1,7 +1,7 @@
 // Animated flow paths for the guided walkthroughs.
 import * as THREE from 'three';
 
-const pulseGeo = new THREE.SphereGeometry(0.15, 8, 6);
+const pulseGeo = new THREE.SphereGeometry(0.18, 8, 6);
 
 function route(a, b) {
   const lift = 4.4;
@@ -22,6 +22,7 @@ export class FlowLayer {
     this.curves = [];
     this.pulses = [];
     this.segments = [];
+    this.halos = [];
     this.color = '#1F4E8C';
     this.step = -1;
     this.visible = false;
@@ -36,6 +37,7 @@ export class FlowLayer {
     this.curves = [];
     this.pulses = [];
     this.segments = [];
+    this.halos = [];
   }
 
   build(flow, anchors) {
@@ -48,8 +50,17 @@ export class FlowLayer {
     for (let i = 0; i < pts.length - 1; i++) {
       const curve = route(pts[i], pts[i + 1]);
       this.curves.push(curve);
+      // white halo first so the coloured tube stays readable over teal pipes
+      const halo = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 44, 0.26, 8, false),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.0, depthWrite: false })
+      );
+      halo.userData.seg = i;
+      this.halos.push(halo);
+      this.group.add(halo);
+
       const seg = new THREE.Mesh(
-        new THREE.TubeGeometry(curve, 40, 0.1, 6, false),
+        new THREE.TubeGeometry(curve, 44, 0.13, 6, false),
         new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.14 })
       );
       seg.userData.seg = i;
@@ -74,8 +85,11 @@ export class FlowLayer {
   setStep(i) {
     this.step = i;
     this.segments.forEach((s) => {
-      const on = i < 0 ? 0.16 : s.userData.seg <= i ? 0.85 : 0.12;
+      const on = i < 0 ? 0.16 : s.userData.seg <= i ? 0.92 : 0.1;
       s.material.opacity = on;
+    });
+    this.halos.forEach((h) => {
+      h.material.opacity = i < 0 ? 0 : h.userData.seg <= i ? 0.62 : 0;
     });
   }
 

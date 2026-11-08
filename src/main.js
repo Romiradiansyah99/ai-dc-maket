@@ -259,7 +259,12 @@ const walk = new Walk(document.getElementById('walk'), {
     const n = f.nodes[i];
     flow.setStep(i);
     const a = anchorFor(n.k);
-    if (a) flyTo(a, 2.4, 900);
+    const nxt = f.nodes[i + 1];
+    const b = nxt ? anchorFor(nxt.k) : null;
+    const d = a && b ? a.distanceTo(b) : 18;
+    // keep the whole segment inside the frame, whatever its length
+    const z = Math.min(2.6, Math.max(0.52, 40 / Math.max(10, d * 1.7)));
+    if (a) flyTo(a, z, 900);
     select(n.k);
     document.getElementById('status').textContent =
       `${f.name} · ${i + 1}/${f.nodes.length} · ${n.state}`;
@@ -290,6 +295,19 @@ document.getElementById('chkPaper').onchange = (e) => {
 };
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') deselect();
+});
+
+document.querySelectorAll('#pad button').forEach((b) => {
+  b.onclick = () => {
+    if (b.dataset.pan) {
+      const [fx, fy] = b.dataset.pan.split(',').map(Number);
+      nav.panStep(fx, fy);
+    } else if (b.dataset.zoom === 'in') {
+      nav.zoomTo(new THREE.Vector2(0, 0), 1.25);
+    } else {
+      nav.zoomTo(new THREE.Vector2(0, 0), 0.8);
+    }
+  };
 });
 
 const help = document.getElementById('help');

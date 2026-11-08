@@ -10,27 +10,16 @@
   "source": "wikipedia",
   "bytes": 355127
  },
- "coolingtower": {
-  "key": "coolingtower",
-  "file": "/tmp/aidc/media/photos/coolingtower.jpg",
-  "article": "Cooling tower",
-  "title": "Didcot_power_station_cooling_tower_zootalures.jpg",
-  "license": "CC BY-SA 3.0",
-  "artist": "User:zootalures (Owen Cliffe)",
-  "page": "https://en.wikipedia.org/wiki/Cooling_tower",
-  "source": "wikipedia",
-  "bytes": 105665
- },
  "ups": {
   "key": "ups",
   "file": "/tmp/aidc/media/photos/ups.jpg",
-  "article": "Uninterruptible power supply",
-  "title": "UPSFrontView.jpg",
-  "license": "CC BY-SA 3.0",
-  "artist": "",
-  "page": "https://en.wikipedia.org/wiki/Uninterruptible_power_supply",
-  "source": "wikipedia",
-  "bytes": 243720
+  "article": "Fort \u00abFurggels\u00bb - Battery Power Supply",
+  "title": "Fort \u00abFurggels\u00bb - Battery Power Supply",
+  "license": "BY 2.0",
+  "artist": "Kecko",
+  "page": "https://www.flickr.com/photos/70981241@N00/5166616214",
+  "source": "flickr",
+  "bytes": 113342
  },
  "pln": {
   "key": "pln",
@@ -46,13 +35,13 @@
  "gardu": {
   "key": "gardu",
   "file": "/tmp/aidc/media/photos/gardu.jpg",
-  "article": "Substation",
-  "title": "Melbourne_Terminal_Station.JPG",
-  "license": "Public domain",
-  "artist": "Allalone89",
-  "page": "https://en.wikipedia.org/wiki/Substation",
-  "source": "wikipedia",
-  "bytes": 99817
+  "article": "Grays Harbor PUD equipment yard",
+  "title": "Grays Harbor PUD equipment yard",
+  "license": "BY-SA 4.0",
+  "artist": "Bri",
+  "page": "https://commons.wikimedia.org/w/index.php?curid=63078289",
+  "source": "wikimedia",
+  "bytes": 78649
  },
  "genset": {
   "key": "genset",
@@ -64,39 +53,6 @@
   "page": "https://en.wikipedia.org/wiki/Diesel_generator",
   "source": "wikipedia",
   "bytes": 68145
- },
- "sts": {
-  "key": "sts",
-  "file": "/tmp/aidc/media/photos/sts.jpg",
-  "article": "Uninterruptible power supply",
-  "title": "UPSFrontView.jpg",
-  "license": "CC BY-SA 3.0",
-  "artist": "",
-  "page": "https://en.wikipedia.org/wiki/Uninterruptible_power_supply",
-  "source": "wikipedia",
-  "bytes": 80904
- },
- "bbu": {
-  "key": "bbu",
-  "file": "/tmp/aidc/media/photos/bbu.jpg",
-  "article": "Battery room",
-  "title": "Fort_\u00abFurggels\u00bb_-_Battery_Power_Supply_(5166616214).jpg",
-  "license": "CC BY 2.0",
-  "artist": "Kecko from Switzerland (Rheintal SG, the border valley between Switzerland and Austria)",
-  "page": "https://en.wikipedia.org/wiki/Battery_room",
-  "source": "wikipedia",
-  "bytes": 46213
- },
- "pdumain": {
-  "key": "pdumain",
-  "file": "/tmp/aidc/media/photos/pdumain.jpg",
-  "article": "Power distribution unit",
-  "title": "APC_10-outlet_rackmount_19-inch_PDU.jpg",
-  "license": "CC BY-SA 3.0",
-  "artist": "DMahalko, Dale Mahalko, Gilman, WI, USA -- Email: dmahalko@gmail.com",
-  "page": "https://en.wikipedia.org/wiki/Power_distribution_unit",
-  "source": "wikipedia",
-  "bytes": 100906
  },
  "busway": {
   "key": "busway",
@@ -112,24 +68,13 @@
  "rackpdu": {
   "key": "rackpdu",
   "file": "/tmp/aidc/media/photos/rackpdu.jpg",
-  "article": "Power distribution unit",
-  "title": "APC_10-outlet_rackmount_19-inch_PDU.jpg",
-  "license": "CC BY-SA 3.0",
+  "article": "APC 10-outlet rackmount 19-inch PDU",
+  "title": "APC 10-outlet rackmount 19-inch PDU",
+  "license": "BY-SA 3.0",
   "artist": "DMahalko, Dale Mahalko, Gilman, WI, USA -- Email: dmahalko@gmail.com",
-  "page": "https://en.wikipedia.org/wiki/Power_distribution_unit",
-  "source": "wikipedia",
-  "bytes": 100906
- },
- "lps": {
-  "key": "lps",
-  "file": "/tmp/aidc/media/photos/lps.jpg",
-  "article": "Lightning rod",
-  "title": "Lightning-rod-diagram.svg",
-  "license": "CC BY-SA 3.0",
-  "artist": "Wdchk",
-  "page": "https://en.wikipedia.org/wiki/Lightning_rod",
-  "source": "wikipedia",
-  "bytes": 33689
+  "page": "https://commons.wikimedia.org/w/index.php?curid=4014914",
+  "source": "wikimedia",
+  "bytes": 166911
  },
  "manifold": {
   "key": "manifold",
@@ -142,38 +87,27 @@
   "source": "wikipedia",
   "bytes": 38205
  },
- "header": {
-  "key": "header",
-  "file": "/tmp/aidc/media/photos/header.jpg",
-  "article": "Hydronics",
-  "title": "Hydronic_Unit_Heater.jpg",
-  "license": "CC BY-SA 4.0",
-  "artist": "SAF1999",
-  "page": "https://en.wikipedia.org/wiki/Hydronics",
-  "source": "wikipedia",
-  "bytes": 60485
- },
  "rack": {
   "key": "rack",
   "file": "/tmp/aidc/media/photos/rack.jpg",
-  "article": "19-inch rack",
-  "title": "Liveaudioequip.jpg",
-  "license": "Public domain",
-  "artist": "PeterPan23 at English Wikipedia",
-  "page": "https://en.wikipedia.org/wiki/19-inch_rack",
-  "source": "wikipedia",
-  "bytes": 53216
+  "article": "Virginia Tech - data center",
+  "title": "Virginia Tech - data center",
+  "license": "BY-SA 2.0",
+  "artist": "cbowns",
+  "page": "https://www.flickr.com/photos/15417585@N00/2414578731",
+  "source": "flickr",
+  "bytes": 258491
  },
  "cleanagent": {
   "key": "cleanagent",
   "file": "/tmp/aidc/media/photos/cleanagent.jpg",
-  "article": "Gaseous fire suppression",
-  "title": "Argon.jpg",
-  "license": "Attribution",
-  "artist": "William Viker",
-  "page": "https://en.wikipedia.org/wiki/Gaseous_fire_suppression",
-  "source": "wikipedia",
-  "bytes": 63960
+  "article": "Afton Historical Museum Clean Agent Fire Suppression System Demonstration-08",
+  "title": "Afton Historical Museum Clean Agent Fire Suppression System Demonstration-08",
+  "license": "BY-SA 4.0",
+  "artist": "Myotus",
+  "page": "https://commons.wikimedia.org/w/index.php?curid=126696382",
+  "source": "wikimedia",
+  "bytes": 170785
  },
  "security": {
   "key": "security",
@@ -208,38 +142,16 @@
   "source": "wikipedia",
   "bytes": 201716
  },
- "rmu": {
-  "key": "rmu",
-  "file": "/tmp/aidc/media/photos/rmu.jpg",
-  "article": "Switchgear",
-  "title": "High-voltage_switchgear_01.jpg",
-  "license": "CC BY 4.0",
-  "artist": "Novoklimov",
-  "page": "https://en.wikipedia.org/wiki/Switchgear",
-  "source": "wikipedia",
-  "bytes": 164121
- },
  "mvswg": {
   "key": "mvswg",
   "file": "/tmp/aidc/media/photos/mvswg.jpg",
-  "article": "Switchgear",
-  "title": "High-voltage_switchgear_01.jpg",
-  "license": "CC BY 4.0",
-  "artist": "Novoklimov",
-  "page": "https://en.wikipedia.org/wiki/Switchgear",
-  "source": "wikipedia",
-  "bytes": 164121
- },
- "msb": {
-  "key": "msb",
-  "file": "/tmp/aidc/media/photos/msb.jpg",
-  "article": "Switchgear",
-  "title": "High-voltage_switchgear_01.jpg",
-  "license": "CC BY 4.0",
-  "artist": "Novoklimov",
-  "page": "https://en.wikipedia.org/wiki/Switchgear",
-  "source": "wikipedia",
-  "bytes": 164121
+  "article": "Cleaning a medium voltage breaker at one of the switchgear rooms in the future LIRR passen",
+  "title": "Cleaning a medium voltage breaker at one of the switchgear rooms in the future LIRR passen",
+  "license": "BY 2.0",
+  "artist": "MTA C&D - EAST SIDE ACCESS",
+  "page": "https://www.flickr.com/photos/59595815@N03/49999234162",
+  "source": "flickr",
+  "bytes": 185059
  },
  "earth": {
   "key": "earth",
@@ -252,17 +164,6 @@
   "source": "wikipedia",
   "bytes": 168462
  },
- "drycooler": {
-  "key": "drycooler",
-  "file": "/tmp/aidc/media/photos/drycooler.jpg",
-  "article": "Radiator",
-  "title": "Automobile radiator.jpg",
-  "license": "Public domain",
-  "artist": "",
-  "page": "https://en.wikipedia.org/wiki/Radiator",
-  "source": "wikipedia",
-  "bytes": 154704
- },
  "pumppri": {
   "key": "pumppri",
   "file": "/tmp/aidc/media/photos/pumppri.jpg",
@@ -273,39 +174,6 @@
   "page": "https://en.wikipedia.org/wiki/Centrifugal_pump",
   "source": "wikipedia",
   "bytes": 78903
- },
- "buffer": {
-  "key": "buffer",
-  "file": "/tmp/aidc/media/photos/buffer.jpg",
-  "article": "Water tank",
-  "title": "Derelict_windpump_with_water_tank_in_the_foreground_next_to_the_Boorowa_railway_in_Galong_NSW_Australia.JPG",
-  "license": "CC BY-SA 4.0",
-  "artist": "John Hewat from Canberra, Australia",
-  "page": "https://en.wikipedia.org/wiki/Water_tank",
-  "source": "wikipedia",
-  "bytes": 70756
- },
- "odf": {
-  "key": "odf",
-  "file": "/tmp/aidc/media/photos/odf.jpg",
-  "article": "Optical fiber",
-  "title": "Fiber optic illuminated.jpg",
-  "license": "CC BY-SA 3.0",
-  "artist": "Hustvedt",
-  "page": "https://en.wikipedia.org/wiki/Optical_fiber",
-  "source": "wikipedia",
-  "bytes": 48092
- },
- "vesda": {
-  "key": "vesda",
-  "file": "/tmp/aidc/media/photos/vesda.jpg",
-  "article": "Smoke detector",
-  "title": "Smoke_detector.JPG",
-  "license": "CC BY-SA 3.0",
-  "artist": "Tumi-1983",
-  "page": "https://en.wikipedia.org/wiki/Smoke_detector",
-  "source": "wikipedia",
-  "bytes": 17962
  },
  "preaction": {
   "key": "preaction",
@@ -329,81 +197,37 @@
   "source": "wikipedia",
   "bytes": 29295
  },
- "noc": {
-  "key": "noc",
-  "file": "/tmp/aidc/media/photos/noc.jpg",
-  "article": "Network operations center",
-  "title": "NOC-IUPUI.jpg",
-  "license": "CC BY 2.0",
-  "artist": "Alan Levine from United States",
-  "page": "https://en.wikipedia.org/wiki/Network_operations_center",
-  "source": "wikipedia",
-  "bytes": 74457
- },
- "staging": {
-  "key": "staging",
-  "file": "/tmp/aidc/media/photos/staging.jpg",
-  "article": "Server room",
-  "title": "Datove_centrum_TCP.jpg",
-  "license": "CC BY-SA 4.0",
-  "artist": "Eclipse55",
-  "page": "https://en.wikipedia.org/wiki/Server_room",
-  "source": "wikipedia",
-  "bytes": 115487
- },
- "metering": {
-  "key": "metering",
-  "file": "/tmp/aidc/media/photos/metering.jpg",
-  "article": "Electricity meter",
-  "title": "Yipwm_1b_(7691592010).jpg",
-  "license": "CC BY-SA 2.0",
-  "artist": "Greg Goebel from Loveland CO, USA",
-  "page": "https://en.wikipedia.org/wiki/Electricity_meter",
-  "source": "wikipedia",
-  "bytes": 48219
- },
  "pdb": {
   "key": "pdb",
   "file": "/tmp/aidc/media/photos/pdb.jpg",
-  "article": "Electrical enclosure",
-  "title": "Schaltschrank_Enclosure.jpg",
-  "license": "CC BY-SA 4.0",
-  "artist": "Detmolder2020",
-  "page": "https://en.wikipedia.org/wiki/Electrical_enclosure",
-  "source": "wikipedia",
-  "bytes": 46103
- },
- "apfc": {
-  "key": "apfc",
-  "file": "/tmp/aidc/media/photos/apfc.jpg",
-  "article": "Capacitor",
-  "title": "Capacitors_(7189597135).jpg",
-  "license": "CC BY-SA 2.0",
-  "artist": "Eric Schrader from San Francisco, CA, United States",
-  "page": "https://en.wikipedia.org/wiki/Capacitor",
-  "source": "wikipedia",
-  "bytes": 58453
- },
- "ats": {
-  "key": "ats",
-  "file": "/tmp/aidc/media/photos/ats.jpg",
-  "article": "Motor control center",
-  "title": "Motor_Control_Center_480_Volt.jpg",
-  "license": "CC BY-SA 3.0",
-  "artist": "Wtshymanski (talk)",
-  "page": "https://en.wikipedia.org/wiki/Motor_control_center",
-  "source": "wikipedia",
-  "bytes": 61629
+  "article": "A close-up view of an electrical distribution board, featuring multiple circuit breakers w",
+  "title": "A close-up view of an electrical distribution board, featuring multiple circuit breakers w",
+  "license": "CC0 1.0",
+  "artist": "Moses Cursor Ssebunya",
+  "page": "https://wordpress.org/photos/photo/21368448ed/",
+  "source": "wordpress",
+  "bytes": 398694
  },
  "firepump": {
   "key": "firepump",
   "file": "/tmp/aidc/media/photos/firepump.jpg",
-  "article": "Pump",
-  "title": "Jet_pump.jpg",
-  "license": "Public domain",
-  "artist": "KVDP",
-  "page": "https://en.wikipedia.org/wiki/Pump",
-  "source": "wikipedia",
-  "bytes": 91763
+  "article": "Single ElectricDiesel Fire Protection Pump",
+  "title": "Single ElectricDiesel Fire Protection Pump",
+  "license": "BY-SA 4.0",
+  "artist": "Alinepumps",
+  "page": "https://commons.wikimedia.org/w/index.php?curid=70016326",
+  "source": "wikimedia",
+  "bytes": 34954
+ },
+ "phe": {
+  "key": "phe",
+  "file": "/tmp/aidc/media/photos/phe.jpg",
+  "article": "Heat Exchanger Plates",
+  "title": "Heat Exchanger Plates",
+  "license": "BY 2.0",
+  "artist": "epicbeer",
+  "page": "https://www.flickr.com/photos/48089112@N00/3627685124",
+  "source": "flickr",
+  "bytes": 129481
  }
 }

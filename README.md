@@ -87,8 +87,8 @@ WebGL required. three.js is vendored, so it also runs with no network access.
 
 - Figures describe **this model**, not a vendor datasheet. Where a real project would differ, the panel says so.
 - Every equipment panel opens with one sentence explaining what the equipment is really for. If the sentence is not true, the detail below it does not matter.
-- Reference photographs come from Wikipedia and Wikimedia Commons under their own licences, with attribution in [docs/PHOTO-CREDITS.md](docs/PHOTO-CREDITS.md).
-- "Learn more" links resolve to a curated video where one exists, and to a scoped YouTube search otherwise. Nothing links to a video ID that has not been checked.
+- Reference photographs are included only where a genuine, correctly licensed image of that exact equipment exists, drawn from Wikimedia Commons and Openverse (Flickr and others). Where no accurate image exists the panel shows no figure rather than a lookalike. Attribution is in [docs/PHOTO-CREDITS.md](docs/PHOTO-CREDITS.md).
+- Every "Learn more" entry links to one specific video. Each video id was resolved from a data center qualified search and then verified through the YouTube oEmbed endpoint, so it resolves to a real, embeddable video rather than a search page.
 
 ## Limitations
 

@@ -1,6 +1,7 @@
 // Left tree, right detail panel, walkthrough bar, heads up controls.
 import { EQUIPMENT, SYSTEMS, INDEX, FLOWS, SYS_COLOR } from './data/systems.js';
 import { PHOTOS } from './data/photos.js';
+import { VIDEOS } from './data/videos.js';
 
 const el = (tag, cls, html) => {
   const n = document.createElement(tag);
@@ -116,12 +117,14 @@ export class Panel {
     const rows = (arr, cls) => arr.map((x) => `<li class="${cls || ''}">${x}</li>`).join('');
     const spec = (e.spec || []).map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('');
     const refs = (e.refs || []).map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('');
-    const vids = (e.videos || []).map((v) => {
-      const url = v.id ? ytWatch(v.id) : ytSearch(v.q || v.title);
-      return `<a class="vid" href="${url}" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        <span>${v.title}</span></a>`;
-    }).join('');
+    const resolved = (VIDEOS[key] || []);
+    const vids = resolved.length
+      ? resolved.map((v) => `<a class="vid" href="${ytWatch(v.id)}" target="_blank" rel="noopener">
+          <img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">
+          <span><b>${v.title}</b><em>${v.channel}</em></span></a>`).join('')
+      : (e.videos || []).map((v) => `<a class="vid" href="${ytSearch(v.q || v.title)}" target="_blank" rel="noopener">
+          <span class="vicon"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+          <span><b>${v.title}</b><em>search YouTube</em></span></a>`).join('');
 
     const ph = PHOTOS[key];
     const photo = ph ? `<figure class="photo">
@@ -231,13 +234,28 @@ export class Walk {
     this.mount.querySelector('.reset').onclick = () => this.reset();
   }
 
-  setFlow(id, selectOnly) {
+  setFlow(id) {
     this.stopTimer();
     this.flowId = id;
     this.step = -1;
-    this.playing = false;
     this.render();
-    if (!selectOnly) this.onStart(this.flow);
+    this.onStart(this.flow);
+    this.playing = true;
+    this.next();
+    this.startTimer();
+  }
+
+  startTimer() {
+    this.stopTimer();
+    this.timer = setInterval(() => {
+      if (this.step >= this.flow.nodes.length - 1) {
+        this.playing = false;
+        this.stopTimer();
+        this.render();
+        return;
+      }
+      this.next();
+    }, 5600);
   }
 
   togglePlay() {
@@ -248,18 +266,9 @@ export class Walk {
       return;
     }
     this.playing = true;
-    this.render();
     if (this.step < 0) this.onStart(this.flow);
     this.next();
-    this.timer = setInterval(() => {
-      if (this.step >= this.flow.nodes.length - 1) {
-        this.playing = false;
-        this.stopTimer();
-        this.render();
-        return;
-      }
-      this.next();
-    }, 5200);
+    this.startTimer();
   }
 
   next() {

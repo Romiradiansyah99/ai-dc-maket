@@ -69,6 +69,15 @@
 
 <aside id="panel" aria-live="polite"></aside>
 
+<div id="pad" aria-label="Pan and zoom">
+  <button data-pan="0,-1" title="Pan forward">&#9650;</button>
+  <button data-pan="-1,0" title="Pan left">&#9664;</button>
+  <button data-pan="1,0" title="Pan right">&#9654;</button>
+  <button data-pan="0,1" title="Pan back">&#9660;</button>
+  <button data-zoom="in" title="Zoom in">+</button>
+  <button data-zoom="out" title="Zoom out">&minus;</button>
+</div>
+
 <footer id="walk"></footer>
 
 <div id="statusbar"><span id="status">Loading</span></div>
@@ -79,9 +88,10 @@
   <div class="helpcard">
     <h3>Navigation</h3>
     <ul>
-      <li><b>Drag</b> to orbit. <b>Right drag</b> or <b>Shift + drag</b> to pan.</li>
-      <li><b>Scroll</b> to zoom toward the cursor. <b>F</b> fits the model back into view.</li>
+      <li><b>Drag</b> to orbit. <b>Right drag</b>, <b>Alt + drag</b> or <b>Shift + drag</b> to pan.</li>
+      <li><b>Scroll</b> to zoom toward the cursor, <b>Shift + scroll</b> to pan sideways. <b>F</b> fits the model back into view.</li>
       <li>On touch: <b>one finger</b> orbits, <b>two fingers</b> pan and zoom.</li>
+      <li>The arrow pad at the lower left always pans, whatever the input device.</li>
     </ul>
     <h3>Reading the model</h3>
     <ul>

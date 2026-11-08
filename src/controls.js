@@ -105,7 +105,7 @@ export class Nav {
   }
 
   pan(dx, dy) {
-    const s = this.worldPerPixel();
+    const s = this.worldPerPixel() * 1.35;
     const right = new THREE.Vector3();
     const up = new THREE.Vector3();
     this.camera.matrixWorld.extractBasis(right, up, new THREE.Vector3());
@@ -113,6 +113,10 @@ export class Nav {
     up.normalize().multiplyScalar(dy * s);
     this.target.add(right).add(up);
     this.apply();
+  }
+
+  panStep(fx, fy) {
+    this.pan(fx * 90, fy * 90);
   }
 
   zoomTo(ndc, factor) {
@@ -144,7 +148,7 @@ export class Nav {
         const [a, b] = [...this._pointers.values()];
         this._pinch = Math.hypot(a.x - b.x, a.y - b.y);
         this._mode = 'pinch';
-      } else if (e.button === 2 || e.shiftKey || e.ctrlKey) {
+      } else if (e.button === 2 || e.shiftKey || e.ctrlKey || e.altKey) {
         this._mode = 'pan';
       } else if (e.button === 1) {
         this._mode = 'orbit';
@@ -199,7 +203,13 @@ export class Nav {
 
     el.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const f = Math.pow(0.9994, e.deltaY * (e.deltaMode === 1 ? 16 : 1));
+      const d = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
+      if (e.shiftKey) {
+        // shift wheel pans sideways, which is what a trackpad user expects
+        this.pan(-d * 0.7, 0);
+        return;
+      }
+      const f = Math.pow(0.9994, d);
       this.zoomTo(this.ndcFromEvent(e), f);
     }, { passive: false });
 
