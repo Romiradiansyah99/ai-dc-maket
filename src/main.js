@@ -339,23 +339,44 @@ const panel = new Panel(document.getElementById('panel'), {
   onPipe: (id) => selectPipe(id)
 });
 
+// Resolve a walkthrough stage into the real geometry of the connection it names.
+// Direction is taken from the previous stage, so the pulse always travels the way
+// the current flows, not the way the schedule happens to be written.
+function segmentFor(prevKey, link) {
+  if (!link) return null;
+  const src = cables.byId[link] || pipes.byId[link];
+  if (!src) { console.warn('walkthrough link not found', link); return null; }
+  const def = src.def;
+  let pts = src.points;
+  let connected = true;
+  if (def.from === prevKey) {
+    // already pointing the right way
+  } else if (def.to === prevKey) {
+    pts = pts.slice().reverse();
+  } else {
+    connected = false;
+  }
+  return { points: pts, connected, id: link };
+}
+
 const walk = new Walk(document.getElementById('walk'), {
   onStart: (f) => {
-    const anchors = {};
-    f.nodes.forEach((n) => { const a = anchorFor(n.k); if (a) anchors[n.k] = a; });
-    flow.build(f, anchors);
+    const segs = f.nodes.map((n, i) => (i === 0 ? null : segmentFor(f.nodes[i - 1].k, n.link)));
+    flow.build(f, segs);
     if (state.level !== 'ALL') setLevel('ALL');
   },
   onStep: (f, i) => {
     const n = f.nodes[i];
     flow.setStep(i);
-    const a = anchorFor(n.k);
-    const nxt = f.nodes[i + 1];
-    const b = nxt ? anchorFor(nxt.k) : null;
-    const d = a && b ? a.distanceTo(b) : 18;
-    // keep the whole segment inside the frame, whatever its length
-    const z = Math.min(2.6, Math.max(0.52, 40 / Math.max(10, d * 1.7)));
-    if (a) flyTo(a, z, 900);
+    const seg = flow.anchorAt(i);
+    if (seg) {
+      // frame the whole connection: a long riser run needs a wider shot than a jumper
+      const z = Math.min(2.4, Math.max(0.5, 42 / Math.max(8, seg.length * 1.6)));
+      flyTo(seg.mid, z, 900);
+    } else {
+      const a = anchorFor(n.k);
+      if (a) flyTo(a, Math.max(nav.zoom, 1.2), 900);
+    }
     select(n.k);
     document.getElementById('status').textContent =
       `${f.name} · ${i + 1}/${f.nodes.length} · ${n.state}`;

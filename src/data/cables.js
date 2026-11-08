@@ -155,6 +155,15 @@ export const CABLES = [
     render: { type: 'tubes', n: 2, r: 0.035 }
   },
 
+  {
+    id: 'DC-03', from: 'rackpdu', to: 'rack', kind: 'dc', tray: 0.45,
+    voltage: '400 V to 48 V DC inside the rack', conductor: '4C x 25 mm2 flexible jumper, 0.9 m',
+    circuits: 1, load: '87 A per feed',
+    routeNote: 'Short flexible jumper from the rack PDU outlet to the rack power shelf',
+    note: 'The last metre, and the one that gets unplugged. It is drawn because it is a real cable with a real bend radius, not because it is interesting.',
+    render: { type: 'tubes', n: 2, r: 0.03 }
+  },
+
   /* ----------------------------- Earthing ---------------------------- */
   {
     id: 'ER-01', from: 'msb', to: 'earth', kind: 'earth', tray: 'buried',

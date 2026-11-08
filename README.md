@@ -21,7 +21,7 @@ A three level, click through model of a **3.2 MW liquid cooled AI data center**,
 
 - **Read the hierarchy.** The left rail is a real MEP tree: system, then subsystem, then equipment. Clicking a row flies the camera to the object and opens its panel.
 - **Isolate a level.** L0 is the plant and yard, L1 is the two data halls, L2 is support space. Exploded view separates the floors so the vertical risers become visible.
-- **Follow the electrical path.** One guided walkthrough, 13 stages, from the 20 kV incomer to the silicon: camera follows, the live segment pulses, and the badge changes with the voltage (20 kV, 400 V, 48 V DC). The cooling and fire sequences were removed rather than half explained.
+- **Follow the path, on the cable.** Two guided walkthroughs, and neither invents a route: each stage is bound to a specific circuit in the schedule, and the animation is built from that circuit's own polyline. The pulse runs inside the tray, climbs the riser, passes through the duct bank and drops into the far equipment, because that is the geometry it was given. Electrical path, 13 stages, 20 kV to 48 V DC. Cooling water loop, 9 stages, cold plate to tower.
 - **Inspect equipment.** Every panel opens with a single sentence on what the thing actually does, then two visuals, then the engineering detail: function, design values, failure modes, commissioning checks and reference figures. The first visual is a model view rendered from that equipment's own geometry, so it always matches the object on screen. The second is a licensed reference photograph where one exists, with attribution.
 - **See the connections, not just the boxes.** Every electrical circuit is modelled: 26 cables and busducts routed from the actual equipment positions, in ladder trays with rungs and hanger rods to the slab, or buried in a duct bank. Click any cable to read its schedule.
 - **Navigate like SketchUp.** Left drag orbits. **Press and hold the scroll wheel and drag to pan**: no rotation, no zoom, just slide. Right drag and the arrow pad do the same, `Space` + drag also pans, the wheel zooms toward the cursor, `F` fits. Touch gets one finger orbit and two finger pan and zoom.
@@ -47,6 +47,23 @@ Routing follows installation practice: leave the equipment at the top face, rise
 tray at the run elevation, run along one axis then the other, drop into the far end. Trays
 carry rungs and hanger rods because a tray is supported, never floating. Busducts are drawn
 as busducts, because at 4,000 A the tray *is* the busduct.
+
+## Walkthroughs follow the connections
+
+A walkthrough stage names a connection, not a pair of coordinates:
+
+```js
+{ k: 'pdumain', state: '400 V', link: 'LV-12', note: '...' }
+```
+
+`src/main.js` resolves that id against the cable or pipe layer, reverses it if the current
+runs the other way, and hands the real polyline to `src/scene/flow.js`. That module fillets
+the corners, resamples, and builds the tube and the travelling pulse from it.
+
+Measured against the modelled geometry, the animated path never strays more than
+**0.11 m** from the cable or pipe axis, on every stage of both walkthroughs, while the tube
+itself is 0.17 m in radius. In other words it stays inside the cable it is describing. The
+regression test is `tools/flow_dev.mjs`.
 
 ## The pipe model
 
