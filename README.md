@@ -13,18 +13,39 @@ A three level, click through model of a **3.2 MW liquid cooled AI data center**,
 | Scope | Utility to silicon, and heat rejection back out |
 | Systems | 6 systems, 13 subsystems, 48 equipment types, 32 AI racks |
 | Levels | L0 plant and yard, L1 white space, L2 support |
-| Walkthroughs | Electrical path (13 stages), cooling water loop (8), air loop (4), safety chain (6) |
+| Walkthrough | Electrical path, 13 stages, one stage at a time |
+| Connections | 26 cables and busducts, routed in tray, duct bank or riser |
 | Stack | Vanilla ES modules, three.js r160 vendored locally, no build step, no framework |
 
 ## What you can do with it
 
 - **Read the hierarchy.** The left rail is a real MEP tree: system, then subsystem, then equipment. Clicking a row flies the camera to the object and opens its panel.
 - **Isolate a level.** L0 is the plant and yard, L1 is the two data halls, L2 is support space. Exploded view separates the floors so the vertical risers become visible.
-- **Follow a path.** The walkthrough maps the electrical chain from the 20 kV incomer to the rack, and the cooling chain from the cold plate back to the cooling tower, one stage at a time, with the camera following and a state badge at each node (20 kV, 400 V, 48 V DC, and so on).
+- **Follow the electrical path.** One guided walkthrough, 13 stages, from the 20 kV incomer to the silicon: camera follows, the live segment pulses, and the badge changes with the voltage (20 kV, 400 V, 48 V DC). The cooling and fire sequences were removed rather than half explained.
 - **Inspect equipment.** Every panel opens with a single sentence on what the thing actually does, then two visuals, then the engineering detail: function, design values, failure modes, commissioning checks and reference figures. The first visual is a model view rendered from that equipment's own geometry, so it always matches the object on screen. The second is a licensed reference photograph where one exists, with attribution.
-- **Navigate like SketchUp.** Drag to orbit, right drag to pan, scroll to zoom toward the cursor, `F` to fit. Touch gets one finger orbit and two finger pan and zoom.
+- **See the connections, not just the boxes.** Every electrical circuit is modelled: 26 cables and busducts routed from the actual equipment positions, in ladder trays with rungs and hanger rods to the slab, or buried in a duct bank. Click any cable to read its schedule.
+- **Navigate like SketchUp.** Drag to orbit, **Pan** tool or hold `Space` for a left drag pan, right drag to pan, scroll to zoom toward the cursor, `F` to fit. The arrow pad at the lower left also pans. Touch gets one finger orbit and two finger pan and zoom.
 
 ![Equipment panel for the water cooled chiller](docs/screenshot-panel.jpg)
+
+## The cable model
+
+The connection layer is not decoration. Each circuit is a record in `src/data/cables.js` —
+from, to, voltage, conductor, circuits, design load, route note, and why it is routed that
+way — and `src/scene/cables.js` builds the geometry from those records against the real
+equipment positions. The drawing and the schedule therefore cannot disagree.
+
+| Group | Circuits | Drawn as |
+|---|---|---|
+| MV, 20 kV | Utility incomer, substation, incomer, metering, RMU, switchgear, 4 transformer feeders | 3 x 1C bundles, red, in tray or duct bank |
+| LV, 400 V | 4 transformer busducts, APFC, PDB, DB, UPS, STS, generator output, ATS, riser to the white space | Busduct or multi-core bundles, dark, in tray |
+| Rack power | PDU to busway, busway tap-offs to rack PDUs | Busduct and flexible drops |
+| Earthing | Switchboard earth bar to site earth pit, building to substation ring | Single conductor, green/yellow, buried |
+
+Routing follows installation practice: leave the equipment at the top face, rise into the
+tray at the run elevation, run along one axis then the other, drop into the far end. Trays
+carry rungs and hanger rods because a tray is supported, never floating. Busducts are drawn
+as busducts, because at 4,000 A the tray *is* the busduct.
 
 ## Design basis
 
@@ -57,6 +78,8 @@ src/scene/kit.js        primitive builder, geometry merging, pencil outlines
 src/scene/build.js      building shell, risers, and every equipment builder
 src/scene/flow.js       animated flow paths and travelling pulses
 src/data/systems.js     the hierarchy: systems, subsystems, walkthroughs
+src/data/cables.js      the cable schedule: 26 circuits, sizes, loads, route notes
+src/scene/cables.js     routes and draws the connection layer from that schedule
 src/data/equipment-*.js the equipment catalogue and its content
 src/data/layout.js      site, levels, rooms, placements
 docs/                   capacity ledger, architecture notes, photo credits

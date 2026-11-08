@@ -15,6 +15,8 @@ export class Nav {
     this.dist = 220;
     this.minZoom = 0.08;
     this.maxZoom = 8;
+    this.panMode = false;   // hand tool: left drag pans instead of orbiting
+    this._space = false;    // holding space is the same as the hand tool
 
     this._pointers = new Map();
     this._mode = null;
@@ -104,7 +106,18 @@ export class Nav {
     this.apply();
   }
 
+  setPanMode(on) {
+    this.panMode = !!on;
+    this._cursor(this.panMode);
+  }
+
+  _cursor(pans) {
+    if (!this.dom) return;
+    this.dom.style.cursor = pans ? 'grab' : '';
+  }
+
   pan(dx, dy) {
+    if (!dx && !dy) return;
     const s = this.worldPerPixel() * 1.35;
     const right = new THREE.Vector3();
     const up = new THREE.Vector3();
@@ -144,7 +157,9 @@ export class Nav {
       el.setPointerCapture(e.pointerId);
       this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       this._moved = 0;
-      if (this._pointers.size === 2) {
+      if (this.panMode || this._space) {
+        this._mode = e.button === 0 || e.button === 1 || e.button === 2 ? 'pan' : 'orbit';
+      } else if (this._pointers.size === 2) {
         const [a, b] = [...this._pointers.values()];
         this._pinch = Math.hypot(a.x - b.x, a.y - b.y);
         this._mode = 'pinch';
@@ -214,12 +229,17 @@ export class Nav {
     }, { passive: false });
 
     window.addEventListener('keydown', (e) => {
-      const step = 40 * this.worldPerPixel();
+      const inField = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''));
+      if (inField) return;
+      if (e.code === 'Space') { this._space = true; this._cursor(true); e.preventDefault(); }
       if (e.key === 'f' || e.key === 'F') this.fit();
-      if (e.key === 'ArrowLeft') this.pan(-step * 10, 0);
-      if (e.key === 'ArrowRight') this.pan(step * 10, 0);
-      if (e.key === 'ArrowUp') this.pan(0, -step * 10);
-      if (e.key === 'ArrowDown') this.pan(0, step * 10);
+      if (e.key === 'ArrowLeft') this.panStep(-1, 0);
+      if (e.key === 'ArrowRight') this.panStep(1, 0);
+      if (e.key === 'ArrowUp') this.panStep(0, -1);
+      if (e.key === 'ArrowDown') this.panStep(0, 1);
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') { this._space = false; this._cursor(this.panMode); }
     });
   }
 }

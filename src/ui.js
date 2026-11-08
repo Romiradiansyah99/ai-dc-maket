@@ -2,6 +2,7 @@
 import { EQUIPMENT, SYSTEMS, INDEX, FLOWS, SYS_COLOR } from './data/systems.js';
 import { PHOTOS } from './data/photos.js';
 import { VIDEOS } from './data/videos.js';
+import { CABLES_TOUCHING } from './data/cables.js';
 
 const el = (tag, cls, html) => {
   const n = document.createElement(tag);
@@ -99,6 +100,7 @@ export class Panel {
     this.mount = mount;
     this.current = null;
     this.onClose = opts.onClose || null;
+    this.onCable = opts.onCable || null;
   }
 
   clear() {
@@ -127,6 +129,21 @@ export class Panel {
           <span><b>${v.title}</b><em>search YouTube</em></span></a>`).join('');
 
     const ph = PHOTOS[key];
+    const wires = CABLES_TOUCHING(key).map((c) => {
+      const dir = c.from === key ? 'out' : 'in';
+      const other = dir === 'out' ? c.to : c.from;
+      const otherName = (EQUIPMENT[other] && EQUIPMENT[other].tag) || other;
+      return `<button class="cablerow" data-cable="${c.id}">
+          <span class="cid">${c.id}<i class="dir ${dir}">${dir === 'out' ? 'feeds' : 'fed by'}</i></span>
+          <span class="cto">${otherName}</span>
+          <span class="cspec">${c.conductor}</span>
+        </button>`;
+    }).join('');
+    const cables = wires ? `<section class="cablelist">
+          <h3>Connections</h3>
+          ${wires}
+        </section>` : '';
+
     const shot = `<figure class="shot">
           <img src="media/shots/${key}.png" alt="${e.name} model view" loading="lazy"
                onerror="this.closest('figure').remove()">
@@ -151,6 +168,7 @@ export class Panel {
       </div>
       <div class="p-body">
         <p class="philo">${e.philosophy || ''}</p>
+        ${cables}
         ${shot}
         ${photo}
         <section>
@@ -184,8 +202,77 @@ export class Panel {
     const closeBtn = this.mount.querySelector('.close');
     if (closeBtn && this.onClose) closeBtn.onclick = () => this.onClose();
     this.mount.querySelector('.focus-btn').onclick = () => onFocus && onFocus(key);
+    this.mount.querySelectorAll('.cablerow').forEach((b) => {
+      b.onclick = () => this.onCable && this.onCable(b.dataset.cable);
+    });
     this.mount.querySelector('.p-body').scrollTop = 0;
   }
+
+  showCable(def, length) {
+    if (!def) return;
+    this.current = 'cable:' + def.id;
+    this.mount.innerHTML = `
+      <button class="close" title="Close">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M5 5l14 14M19 5 5 19"/>
+        </svg>
+      </button>
+      ${cableCardHTML(def, length)}`;
+    this.mount.classList.add('open');
+    const closeBtn = this.mount.querySelector('.close');
+    if (closeBtn && this.onClose) closeBtn.onclick = () => this.onClose();
+    this.mount.querySelector('.p-body').scrollTop = 0;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Cable card                                                          */
+/* ------------------------------------------------------------------ */
+
+const KIND_NAME = {
+  mv: 'Medium voltage cable',
+  lv: 'Low voltage cable',
+  duct: 'Busduct',
+  dc: 'Flexible tap cable',
+  earth: 'Earthing conductor'
+};
+
+export function cableCardHTML(def, length, anchors) {
+  const fromName = (EQUIPMENT[def.from] && EQUIPMENT[def.from].name) || def.from;
+  const toName = (EQUIPMENT[def.to] && EQUIPMENT[def.to].name) || def.to;
+  return `
+    <div class="p-head" style="--c:#8A1F2B">
+      <div class="p-crumb">Electrical system <span>/</span> ${KIND_NAME[def.kind] || 'Cable'}</div>
+      <h2>${def.id}</h2>
+      <div class="p-tagrow"><span class="pill">${def.kind.toUpperCase()}</span><span class="p-short">${fromName} to ${toName}</span></div>
+    </div>
+    <div class="p-body">
+      <p class="philo">${def.note || ''}</p>
+      <section>
+        <h3>Schedule</h3>
+        <div class="kvs">
+          <div class="kv"><span>From</span><b>${fromName}</b></div>
+          <div class="kv"><span>To</span><b>${toName}</b></div>
+          <div class="kv"><span>Voltage</span><b>${def.voltage}</b></div>
+          <div class="kv"><span>Conductor</span><b>${def.conductor}</b></div>
+          <div class="kv"><span>Circuits drawn</span><b>${def.circuits}</b></div>
+          <div class="kv"><span>Design load</span><b>${def.load}</b></div>
+          <div class="kv"><span>Route length</span><b>${length ? length.toFixed(1) + ' m' : 'n/a'}</b></div>
+        </div>
+      </section>
+      <section>
+        <h3>Route</h3>
+        <p>${def.routeNote || ''}</p>
+      </section>
+      <section>
+        <h3>Why it is routed this way</h3>
+        <p>${def.tray === 'buried'
+          ? 'Buried in a duct bank at grade, run on the two axes in turn, entering each end at floor level.'
+          : (def.render && def.render.type === 'duct'
+            ? `Rises to its own busduct support level at ${def.tray} m, runs on the two axes in turn, then drops into the far end. It does not sit in a tray: at this current it is the tray.`
+            : `Leaves the equipment, rises into the cable tray at ${def.tray} m, runs along the two axes in turn, then drops into the far end.`)} Bends are swept, not mitred, and nothing crosses a room diagonally.</p>
+      </section>
+    </div>`;
 }
 
 /* ------------------------------------------------------------------ */

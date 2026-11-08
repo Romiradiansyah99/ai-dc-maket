@@ -87,7 +87,9 @@ export const INDEX = (() => {
 })();
 
 // Guided walkthroughs. Each node points at an equipment key; the scene supplies the position.
-export const FLOWS = [
+// Only the electrical path is exposed: the model is now an electrical teaching model,
+// and a half explained cooling or fire sequence teaches less than a complete one.
+const ALL_FLOWS = [
   {
     id: 'power',
     name: 'Electrical Path',
@@ -152,3 +154,5 @@ export const FLOWS = [
     ]
   }
 ];
+
+export const FLOWS = ALL_FLOWS.filter((f) => f.id === 'power');

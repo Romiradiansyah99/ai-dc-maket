@@ -4,6 +4,8 @@ import { Nav } from './controls.js';
 import { buildSite, equipmentKeyOf } from './scene/build.js';
 import { FlowLayer } from './scene/flow.js';
 import { Tree, Panel, Walk } from './ui.js';
+import { buildCableLayer } from './scene/cables.js';
+import { CABLE_BY_ID } from './data/cables.js';
 import { LEVELS, ROOMS, BUILDING } from './data/layout.js';
 import { EQUIPMENT, INDEX, FLOWS, SYS_COLOR, SYSTEMS } from './data/systems.js';
 
@@ -46,6 +48,7 @@ rim.position.set(0, 10, 60);
 scene.add(rim);
 
 const nav = new Nav(camera, canvas);
+window.__nav = nav;  // debugging hook: inspect camera state from the console
 resize();
 window.addEventListener('resize', resize);
 
@@ -53,6 +56,27 @@ window.addEventListener('resize', resize);
 
 const site = buildSite();
 scene.add(site.root);
+
+// Cables are routed from the real equipment anchors, so they cannot drift from the model.
+const cables = buildCableLayer(site);
+scene.add(cables.root);
+
+// The structure is context, not content: fade it so the electrical layer reads clearly.
+for (const g of Object.values(site.shell.groups)) {
+  g.traverse((o) => {
+    if (o.isMesh && o.material) {
+      o.material = o.material.clone();
+      o.material.transparent = true;
+      o.material.opacity = 0.14;
+      o.material.depthWrite = false;
+    } else if (o.isLineSegments && o.material) {
+      o.material = o.material.clone();
+      o.material.transparent = true;
+      o.material.opacity = 0.18;
+    }
+  });
+}
+
 const flow = new FlowLayer(scene);
 
 const state = {
@@ -60,6 +84,8 @@ const state = {
   exploded: false,
   roof: false,
   paper: true,
+  cables: true,
+  structure: true,
   selected: null,
   hovered: null
 };
@@ -117,11 +143,13 @@ function pickAt(clientX, clientY) {
   const r = canvas.getBoundingClientRect();
   ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
   raycaster.setFromCamera(ndc, camera);
-  const hits = raycaster.intersectObjects(site.pickRoots, true);
+  const targets = site.pickRoots.slice();
+  if (cables.root.visible) targets.push(cables.root);
+  const hits = raycaster.intersectObjects(targets, true);
   for (const h of hits) {
     if (!h.object.visible) continue;
     let o = h.object;
-    while (o && !(o.userData && o.userData.key)) o = o.parent;
+    while (o && !(o.userData && (o.userData.key || o.userData.cableId))) o = o.parent;
     if (o && o.visible) return o;
   }
   return null;
@@ -131,7 +159,9 @@ nav.onHover = (e) => {
   const obj = pickAt(e.clientX, e.clientY);
   if (obj) {
     canvas.style.cursor = 'pointer';
-    tooltip.textContent = obj.userData.tag + '  ' + obj.userData.name;
+    tooltip.textContent = obj.userData.cableId
+      ? obj.userData.cableId + '  ' + (CABLE_BY_ID[obj.userData.cableId] || {}).conductor
+      : obj.userData.tag + '  ' + obj.userData.name;
     tooltip.style.transform = `translate(${e.clientX + 14}px, ${e.clientY + 10}px)`;
     tooltip.classList.add('on');
   } else {
@@ -142,9 +172,24 @@ nav.onHover = (e) => {
 
 nav.onPick = (e) => {
   const obj = pickAt(e.clientX, e.clientY);
-  if (obj) select(obj.userData.key, obj);
+  if (obj && obj.userData.cableId) selectCable(obj.userData.cableId);
+  else if (obj) select(obj.userData.key, obj);
   else deselect();
 };
+
+function selectCable(id) {
+  const c = cables.byId[id];
+  if (!c) return;
+  state.selected = 'cable:' + id;
+  tree.setActive(null);
+  panel.showCable(c.def, c.length);
+  document.body.classList.add('has-selection');
+  const mid = c.points[Math.floor(c.points.length / 2)];
+  focusLabel.textContent = id;
+  focusObj.position.copy(mid).add(new THREE.Vector3(0, 0.6, 0));
+  focusObj.visible = true;
+  flyTo(mid.clone(), Math.max(nav.zoom, 1.1));
+}
 
 function anchorFor(k) {
   const list = site.byKey[k];
@@ -212,8 +257,10 @@ function applyDisplay() {
     }
   });
   for (const [id, g] of Object.entries(site.shell.groups)) {
-    g.visible = lvl === 'ALL' || id === lvl;
+    g.visible = state.structure && (lvl === 'ALL' || id === lvl);
   }
+  // cables span floors, so they are only honest when the whole site is shown
+  cables.root.visible = state.cables && lvl === 'ALL' && !state.exploded;
   site.shell.roof.visible = state.roof && (lvl === 'ALL' || lvl === 'L2');
   const risers = site.root.getObjectByName('risers');
   if (risers) risers.visible = lvl === 'ALL' && !state.exploded;
@@ -246,7 +293,10 @@ const tree = new Tree(document.getElementById('tree'), {
   }
 });
 
-const panel = new Panel(document.getElementById('panel'), { onClose: deselect });
+const panel = new Panel(document.getElementById('panel'), {
+  onClose: deselect,
+  onCable: (id) => selectCable(id)
+});
 
 const walk = new Walk(document.getElementById('walk'), {
   onStart: (f) => {
@@ -288,6 +338,14 @@ document.querySelectorAll('#views button').forEach((b) => {
   };
 });
 document.getElementById('chkRoof').onchange = (e) => { state.roof = e.target.checked; applyDisplay(); };
+document.getElementById('chkCables').onchange = (e) => {
+  state.cables = e.target.checked;
+  applyDisplay();
+};
+document.getElementById('chkStructure').onchange = (e) => {
+  state.structure = e.target.checked;
+  applyDisplay();
+};
 document.getElementById('chkExplode').onchange = (e) => { state.exploded = e.target.checked; applyDisplay(); };
 document.getElementById('chkPaper').onchange = (e) => {
   state.paper = e.target.checked;
@@ -296,6 +354,23 @@ document.getElementById('chkPaper').onchange = (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') deselect();
 });
+
+/* hand tool and pad placement */
+const btnPan = document.getElementById('btnPan');
+btnPan.onclick = () => {
+  const on = !nav.panMode;
+  nav.setPanMode(on);
+  btnPan.classList.toggle('on', on);
+};
+
+function placePad() {
+  const walkEl = document.getElementById('walk');
+  const pad = document.getElementById('pad');
+  if (!walkEl || !pad) return;
+  const h = walkEl.getBoundingClientRect().height;
+  pad.style.bottom = (34 + h + 12) + 'px';
+}
+window.addEventListener('resize', placePad);
 
 document.querySelectorAll('#pad button').forEach((b) => {
   b.onclick = () => {
@@ -342,6 +417,7 @@ function tick() {
 
 function boot() {
   applyDisplay();
+  placePad();
   nav.fit(62, new THREE.Vector3(0, 7, -4));
   nav.zoom = 0.56;
   flyTo(new THREE.Vector3(0, 7, -4), 0.56, 1);
@@ -349,7 +425,7 @@ function boot() {
   const total = site.items.filter((i) => i.key === 'rack').length;
   document.getElementById('status').textContent =
     `${SYSTEMS.length} systems · ${Object.keys(EQUIPMENT).length} equipment types · ${total} AI racks · 3 levels`;
-  window.__app = { scene, camera, nav, site, flow, select, setLevel, state, EQUIPMENT, INDEX, FLOWS, SYS_COLOR };
+  window.__app = { scene, camera, nav, site, flow, cables, select, selectCable, setLevel, state, EQUIPMENT, INDEX, FLOWS, SYS_COLOR };
 }
 boot();
 tick();

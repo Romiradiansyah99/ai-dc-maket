@@ -35,16 +35,7 @@ await new Promise((r) => setTimeout(r, 4000));
 await page.screenshot({ path: path.join(ROOT, 'docs/screenshot-iso.png') });
 console.log('OK docs/screenshot-iso.png');
 
-await page.evaluate(() => {
-  const heads = [...document.querySelectorAll('.sys-name')];
-  const cool = heads.find((x) => /Cooling, Water/i.test(x.textContent));
-  if (cool) cool.click();
-});
-await new Promise((r) => setTimeout(r, 600));
-await page.evaluate(() => {
-  const row = [...document.querySelectorAll('.item')].find((x) => /Water Cooled Chiller|Chiller/i.test(x.textContent));
-  if (row) row.click();
-});
+await page.evaluate(() => { window.__app.selectCable('LV-01'); });
 await new Promise((r) => setTimeout(r, 2500));
 await page.screenshot({ path: path.join(ROOT, 'docs/screenshot-panel.png') });
 console.log('OK docs/screenshot-panel.png');
