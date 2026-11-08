@@ -154,7 +154,9 @@ export class Nav {
     el.addEventListener('contextmenu', (e) => e.preventDefault());
 
     el.addEventListener('pointerdown', (e) => {
-      el.setPointerCapture(e.pointerId);
+      // Pointer capture is a convenience, not a requirement. If it throws (an
+      // inactive pointer id, a browser that refuses it), pan and orbit must still work.
+      try { el.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
       this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       this._moved = 0;
       if (this.panMode || this._space) {
@@ -173,7 +175,12 @@ export class Nav {
       this._last = { x: e.clientX, y: e.clientY };
     });
 
-    el.addEventListener('pointermove', (e) => {
+    const insideCanvas = (e) => {
+      const r = el.getBoundingClientRect();
+      return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    };
+
+    window.addEventListener('pointermove', (e) => {
       if (this._pointers.has(e.pointerId)) {
         this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       }
@@ -181,7 +188,7 @@ export class Nav {
       const dy = e.clientY - this._last.y;
 
       if (!this._mode) {
-        if (this.onHover) this.onHover(e);
+        if (this.onHover && insideCanvas(e)) this.onHover(e);
         return;
       }
       this._moved += Math.abs(dx) + Math.abs(dy);
@@ -213,8 +220,8 @@ export class Nav {
         this._pinch = 0;
       }
     };
-    el.addEventListener('pointerup', end);
-    el.addEventListener('pointercancel', end);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
 
     el.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -240,6 +247,11 @@ export class Nav {
     });
     window.addEventListener('keyup', (e) => {
       if (e.code === 'Space') { this._space = false; this._cursor(this.panMode); }
+    });
+    window.addEventListener('blur', () => {
+      this._pointers.clear();
+      this._mode = null;
+      this._pinch = 0;
     });
   }
 }
