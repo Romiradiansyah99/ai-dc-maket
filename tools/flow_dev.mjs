@@ -2,10 +2,12 @@
 // Usage: node tools/flow_dev.mjs [tabIndex]
 import puppeteer from 'puppeteer-core';
 const tab = Number(process.argv[2] || 0);
+const ARG = process.argv[3] || '8814';
+const URL = /^https?:/.test(ARG) ? ARG : `http://127.0.0.1:${ARG}/`;
 const b = await puppeteer.launch({ executablePath:'/usr/bin/chromium', headless:'shell', args:['--no-sandbox','--use-gl=swiftshader','--enable-unsafe-swiftshader'] });
 const p = await b.newPage(); await p.setViewport({width:1200,height:800});
 const errs=[]; p.on('pageerror',e=>errs.push(e.message));
-await p.goto('http://127.0.0.1:8814/', {waitUntil:'domcontentloaded'});
+await p.goto(URL, { waitUntil: 'domcontentloaded' });
 await new Promise(r=>setTimeout(r,4500));
 await p.evaluate((i)=>document.querySelectorAll('.w-tab')[i].click(), tab);
 await new Promise(r=>setTimeout(r,1600));
