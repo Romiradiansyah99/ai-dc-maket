@@ -138,8 +138,8 @@ export const CORE = {
     tag: 'STG-01', name: 'Staging and Integration Area', sys: 'fac', sub: 'staging',
     short: '4 rack positions, 2 to 3 days per rack',
     philosophy: 'A rack should fail here, in a room with a drain, not in a hall with a live busway.',
-    function: 'Where racks are assembled, filled and tested before entering the white space. On a liquid cooled site this stage takes longer than usual, because every rack has to be pressure tested and its quick disconnects cycled before it is allowed anywhere near the hall.',
-    spec: [['Capacity', '4 rack positions'], ['Duration', '2 to 3 days per rack'], ['Services', 'power, coolant, network'], ['Floor', 'rated for loaded rack weight']],
+    function: 'Where racks are assembled, filled and tested before entering the white space. It sits directly behind the loading dock, because the alternative is moving a loaded rack twice: once from the truck to a temporary spot, and again to the lift. On a liquid cooled site this stage also takes longer, because every rack has to be pressure tested and its quick disconnects cycled before it is allowed anywhere near the hall.',
+    spec: [['Capacity', '4 rack positions'], ['Duration', '2 to 3 days per rack'], ['Location', 'ground floor, behind the loading dock'], ['Services', 'power, coolant, network, floor drain'], ['Floor', 'rated for loaded rack weight']],
     risks: ['Staging capacity too small, creating a queue to enter the hall', 'Leak testing skipped because the schedule is short', 'Staging floor not rated for the loaded rack weight'],
     tests: ['Quick disconnect and pressure test per rack', 'Burn in under synthetic load', 'Weight and route verification'],
     refs: [['Positions', '4'], ['Duration', '2 to 3 days'], ['Tests', 'pressure, burn in']],
@@ -192,5 +192,17 @@ export const CORE = {
     tests: ['Load test at 125 percent rated capacity', 'Rescue descent with normal power isolated', 'Door interlock and levelling accuracy at every landing'],
     refs: [['Capacity', '2,500 kg'], ['Levels', '3'], ['Rescue', 'manual, battery backed']],
     videos: [{ title: 'Goods lift in a data center', q: 'data center goods lift equipment delivery staging rack movement' }]
+  },
+
+  dock: {
+    tag: 'DOCK-01', name: 'Loading Dock and Goods In', sys: 'fac', sub: 'staging',
+    short: '3 bays, levellers, 1.2 m platform',
+    philosophy: 'Every rack in the building arrives through one door, and that door is the only place where the outside world touches the white space.',
+    function: 'Three dock bays with adjustable levellers, roller shutters and a sealed canopy, sized so a 40 foot trailer can be unloaded without opening the building to weather or to insects. The platform sits at 1.2 m, the standard trailer bed height, and the leveller takes up the difference in suspension height instead of a ramp taking up the floor. Goods come off the truck, through the door, straight into staging, which is directly behind it, and then to the goods lift.',
+    spec: [['Bays', '3, roller shutter'], ['Platform height', '1.2 m'], ['Levellers', '3, hydraulic, 1.5 x 2.2 m'], ['Access', 'sealed canopy, dock shelter, wheel guides']],
+    risks: ['Dock door left open, so humidity and dust enter the staging area', 'Rack unloaded without a pallet truck rated for the weight, and it goes over the edge', 'No interlock between the shutter and the leveller, so a trailer departs mid unload'],
+    tests: ['Leveller load test at rated capacity, both raised and below dock level', 'Shutter and vehicle restraint interlock sequence', 'Water test on the canopy seal during a storm'],
+    refs: [['Bays', '3'], ['Platform', '1.2 m'], ['Load', 'pallet truck, 2.5 t']],
+    videos: [{ title: 'Loading dock design for data centers', q: 'loading dock design considerations dock leveller roller shutter explained' }]
   },
 };

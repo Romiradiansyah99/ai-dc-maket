@@ -70,7 +70,7 @@ Cable and pipe schedules import `R` and take their vertical waypoints from it, s
 `tools/check_risers.mjs` enforces it. It loads the live scene, finds every vertical leg that crosses a slab plane, and fails if that leg is more than 1.15 m from a shaft centre. Deliberate trench penetrations are listed with a reason rather than hidden:
 
 ```
-cables 38, pipes 17, floor crossings 12
+cables 39, pipes 17, floor crossings 12
 
 riser usage
   lv     LV-12, LV-13, BL-04, BL-06

@@ -63,7 +63,7 @@ export const SYSTEMS = [
     subsystems: [
       { id: 'ops', name: 'Operations & Monitoring', items: ['noc', 'epms'] },
       { id: 'security', name: 'Security', items: ['security'] },
-      { id: 'staging', name: 'Staging & Integration', items: ['staging'] },
+      { id: 'staging', name: 'Goods In & Staging', items: ['dock', 'staging'] },
       { id: 'support', name: 'Support Space', items: ['office', 'lift'] }
     ]
   }

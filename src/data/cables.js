@@ -202,6 +202,13 @@ export const CABLES = [
     render: { type: 'tubes', n: 2, r: 0.04 }
   },
   {
+    id: 'BL-09', from: 'mdbn', to: 'dock', kind: 'bl', tray: 3.4,
+    voltage: '400 V', conductor: '4C x 25 mm2 Cu/PVC', circuits: 1, load: '63 A',
+    routeNote: 'Tray across the goods in area to the dock control panel and door drives',
+    note: 'Three roller doors, three levellers and the dock lights. Small load, and the reason a delivery can be unloaded in the rain without the hall losing containment.',
+    render: { type: 'tubes', n: 2, r: 0.04 }
+  },
+  {
     id: 'BL-08', from: 'ldb', to: 'lift', kind: 'bl', tray: 2.4,
     voltage: '400 V', conductor: '4C x 35 mm2 Cu/PVC', circuits: 1, load: '80 A',
     routeNote: 'Short run from the floor board to the lift machine room isolator',

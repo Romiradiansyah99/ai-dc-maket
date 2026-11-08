@@ -24,7 +24,9 @@ export const ROOMS = {
     { id: 'chiller-plant', name: 'Chiller Plant', x: [-29, -6], z: [-9, 11] },
     { id: 'pump-room', name: 'Pump & Heat Exchanger Room', x: [-5, 4], z: [-9, 3] },
     { id: 'fire-pump-room', name: 'Fire Pump Room', x: [5, 12], z: [-9, 3] },
-    { id: 'epms-room', name: 'EPMS / Metering Room', x: [13, 22], z: [-9, 3] },
+    { id: 'epms-room', name: 'EPMS / Metering Room', x: [13, 22], z: [-9, -2] },
+    { id: 'staging', name: 'Staging & Integration', x: [16, 24], z: [-2, 10] },
+    { id: 'dock', name: 'Loading Dock & Goods In', x: [24, 30], z: [-2, 10] },
     { id: 'store', name: 'Maintenance Store', x: [23, 29], z: [-19, -4] },
     { id: 'lobby', name: 'Entry Lobby & Mantrap', x: [-24, -14], z: [13, 19] },
     { id: 'riser-l0', name: 'Riser & Switch Room', x: [-3, 8], z: [6.5, 18] }
@@ -38,8 +40,7 @@ export const ROOMS = {
     { id: 'riser-l1', name: 'Riser Room', x: [-3, 8], z: [6.5, 18] }
   ],
   L2: [
-    { id: 'staging', name: 'Staging & Integration', x: [-29, -8], z: [-19, 1] },
-    { id: 'office', name: 'Office & Meeting', x: [-7, 8], z: [-19, -4] },
+    { id: 'office', name: 'Office, Meeting & Training Annex', x: [-29, 8], z: [-19, -4] },
     { id: 'security', name: 'Security & Access Control', x: [9, 18], z: [-19, -6] },
     { id: 'break', name: 'Break Room', x: [19, 29], z: [-19, -6] },
     { id: 'training', name: 'Training Room', x: [-29, -10], z: [3, 19] },
@@ -54,7 +55,8 @@ export const YARD = [
   { id: 'genset-yard', name: 'Generator Yard', x: [-30, -12], z: [-38, -26], kind: 'yard' },
   { id: 'fuel-farm', name: 'Fuel Farm', x: [-11, -5], z: [-38, -26], kind: 'yard' },
   { id: 'ct-yard', name: 'Cooling Tower Yard', x: [-4, 16], z: [-38, -26], kind: 'yard' },
-  { id: 'dc-yard', name: 'Dry Cooler Yard', x: [17, 30], z: [-38, -26], kind: 'yard' }
+  { id: 'dc-yard', name: 'Dry Cooler Yard', x: [17, 30], z: [-38, -26], kind: 'yard' },
+  { id: 'dock-apron', name: 'Truck Apron & Turning', x: [31, 50], z: [-4, 12], kind: 'yard' }
 ];
 
 // Vertical shafts tying the levels together.

@@ -461,6 +461,31 @@ const KINDS = {
     b.box(1.4, 0.3, 1.2, C.fill2, { pos: [0, 3.5, 0] });
   },
 
+  dock(b) {
+    // Raised dock with three roller doors facing the apron. The plate on each door is
+    // the leveller, and the two bumpers are what stops a trailer taking the wall with it.
+    b.box(5.6, 1.15, 11.4, C.fill2, { pos: [0, 0.575, 0], amp: 0.008 });
+    b.box(0.26, 0.14, 11.4, C.dark, { pos: [2.83, 1.22, 0], edge: true });
+
+    for (const z of [-3.6, 0, 3.6]) {
+      b.box(0.14, 3.2, 3.0, C.steel, { pos: [2.86, 2.75, z], edge: true, amp: 0.004 });
+      for (let i = 0; i < 8; i++) {
+        b.box(0.17, 0.06, 2.9, C.dark, { pos: [2.9, 1.36 + i * 0.22, z], edge: false });
+      }
+      b.box(1.5, 0.1, 2.2, C.steel, { pos: [2.2, 1.17, z], edge: true, amp: 0.003 });
+      for (const zz of [-1.28, 1.28]) {
+        b.box(0.3, 0.44, 0.32, C.dark, { pos: [2.95, 0.95, z + zz], edge: true, amp: 0.002 });
+      }
+      b.box(0.18, 1.5, 0.18, C.dark, { pos: [2.55, 0.75, z + 1.75], edge: false });
+    }
+
+    b.box(1.7, 0.12, 11.4, C.fill, { pos: [3.5, 3.32, 0], edge: true, amp: 0.004 });
+    for (const z of [-5.0, -1.8, 1.8, 5.0]) {
+      b.box(0.1, 3.3, 0.1, C.dark, { pos: [4.15, 1.65, z], edge: false });
+    }
+    for (const z of [-4.9, 4.9]) b.box(5.2, 0.06, 0.1, C.dark, { pos: [0, 1.2, z], edge: false });
+  },
+
   fibentry(b) {
     b.box(1.8, 0.14, 0.9, C.dark, { pos: [0, 0.07, 0] });
     b.box(1.7, 1.9, 0.8, C.steel, { pos: [0, 1.02, 0], amp: 0.01 });
@@ -528,8 +553,9 @@ const PLACE = {
   preaction: { kind: 'preaction', floor: 'L1', spots: [[-15.5, -11.8, 0, 4.95], [15.5, -11.8, 0, 4.95]] },
   epo: { kind: 'epo', floor: 'L1', spots: [[-4.4, -17.6, 0], [28.4, -17.6, 0]] },
   lps: { kind: 'lps', floor: 'L2', spots: [[-27, -17, 0], [27, -17, 0]] },
-  staging: { kind: 'staging', floor: 'L2', spots: [[-20, -10, 0], [-14, -10, 0]] },
-  office: { kind: 'office', floor: 'L2', spots: [[0, -10, 0]] }
+  staging: { kind: 'staging', floor: 'L0', spots: [[19.5, 2, 0], [19.5, 7, 0]] },
+  dock: { kind: 'dock', floor: 'L0', spots: [[27, 4, 0]] },
+  office: { kind: 'office', floor: 'L2', spots: [[-18, -10, 0], [0, -10, 0]] }
 };
 
 /* Racks: 32 units, 8 per row, 4 rows across two halls. */
