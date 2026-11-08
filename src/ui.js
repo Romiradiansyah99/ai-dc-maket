@@ -127,10 +127,15 @@ export class Panel {
           <span><b>${v.title}</b><em>search YouTube</em></span></a>`).join('');
 
     const ph = PHOTOS[key];
+    const shot = `<figure class="shot">
+          <img src="media/shots/${key}.png" alt="${e.name} model view" loading="lazy"
+               onerror="this.closest('figure').remove()">
+          <figcaption>Model view · rendered from this model's geometry</figcaption>
+        </figure>`;
     const photo = ph ? `<figure class="photo">
           <img src="media/photos/${key}.jpg" alt="${e.name}" loading="lazy"
                onerror="this.closest('figure').remove()">
-          <figcaption>${ph.credit} · ${ph.licence} · <a href="${ph.page}" target="_blank" rel="noopener">source</a></figcaption>
+          <figcaption>Reference photograph · ${ph.credit} · ${ph.licence} · <a href="${ph.page}" target="_blank" rel="noopener">source</a></figcaption>
         </figure>` : '';
 
     this.mount.innerHTML = `
@@ -146,6 +151,7 @@ export class Panel {
       </div>
       <div class="p-body">
         <p class="philo">${e.philosophy || ''}</p>
+        ${shot}
         ${photo}
         <section>
           <h3>What it does</h3>

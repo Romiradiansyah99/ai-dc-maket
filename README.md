@@ -4,7 +4,7 @@ A three level, click through model of a **3.2 MW liquid cooled AI data center**,
 
 **Live model:** https://romiradiansyah99.github.io/ai-dc-maket/
 
-![Isometric view of the model](docs/screenshot-iso.png)
+![Isometric view of the model](docs/screenshot-iso.jpg)
 
 ## What it is
 
@@ -21,10 +21,10 @@ A three level, click through model of a **3.2 MW liquid cooled AI data center**,
 - **Read the hierarchy.** The left rail is a real MEP tree: system, then subsystem, then equipment. Clicking a row flies the camera to the object and opens its panel.
 - **Isolate a level.** L0 is the plant and yard, L1 is the two data halls, L2 is support space. Exploded view separates the floors so the vertical risers become visible.
 - **Follow a path.** The walkthrough maps the electrical chain from the 20 kV incomer to the rack, and the cooling chain from the cold plate back to the cooling tower, one stage at a time, with the camera following and a state badge at each node (20 kV, 400 V, 48 V DC, and so on).
-- **Inspect equipment.** Every panel opens with a single sentence on what the thing actually does, then a photograph, then the engineering detail: function, design values, failure modes, commissioning checks and reference figures.
+- **Inspect equipment.** Every panel opens with a single sentence on what the thing actually does, then two visuals, then the engineering detail: function, design values, failure modes, commissioning checks and reference figures. The first visual is a model view rendered from that equipment's own geometry, so it always matches the object on screen. The second is a licensed reference photograph where one exists, with attribution.
 - **Navigate like SketchUp.** Drag to orbit, right drag to pan, scroll to zoom toward the cursor, `F` to fit. Touch gets one finger orbit and two finger pan and zoom.
 
-![Equipment panel for the water cooled chiller](docs/screenshot-panel.png)
+![Equipment panel for the water cooled chiller](docs/screenshot-panel.jpg)
 
 ## Design basis
 
@@ -60,7 +60,10 @@ src/data/systems.js     the hierarchy: systems, subsystems, walkthroughs
 src/data/equipment-*.js the equipment catalogue and its content
 src/data/layout.js      site, levels, rooms, placements
 docs/                   capacity ledger, architecture notes, photo credits
+media/shots/            one rendered model view per equipment type (48)
 tools/fetch_photos.py   reference photo fetcher with licence capture
+tools/render_shots.mjs  headless renderer that regenerates media/shots
+tools/fetch_videos.py   resolves and verifies one YouTube reference per type
 vendor/                 three.js r160, vendored so the site runs offline
 ```
 
@@ -87,7 +90,8 @@ WebGL required. three.js is vendored, so it also runs with no network access.
 
 - Figures describe **this model**, not a vendor datasheet. Where a real project would differ, the panel says so.
 - Every equipment panel opens with one sentence explaining what the equipment is really for. If the sentence is not true, the detail below it does not matter.
-- Reference photographs are included only where a genuine, correctly licensed image of that exact equipment exists, drawn from Wikimedia Commons and Openverse (Flickr and others). Where no accurate image exists the panel shows no figure rather than a lookalike. Attribution is in [docs/PHOTO-CREDITS.md](docs/PHOTO-CREDITS.md).
+- Every equipment type has a **model view**: an isolated axonometric render produced by `tools/render_shots.mjs` from the same primitives the site draws, on paper stock, with no artistic licence. It cannot drift from the model because it is the model.
+- Reference photographs are a separate, stricter set: an image is kept only if it shows that exact equipment in a form recognisable for a data center. Anything ambiguous is dropped rather than kept as a lookalike, so 16 of 48 types carry a photograph and the rest carry the model view alone. Attribution is in [docs/PHOTO-CREDITS.md](docs/PHOTO-CREDITS.md).
 - Every "Learn more" entry links to one specific video. Each video id was resolved from a data center qualified search and then verified through the YouTube oEmbed endpoint, so it resolves to a real, embeddable video rather than a search page.
 
 ## Limitations

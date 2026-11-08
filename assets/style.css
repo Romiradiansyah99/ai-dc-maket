@@ -197,6 +197,20 @@ body.no-paper #grain{opacity:0}
   padding-left:12px;border-left:2px solid var(--c);
   font-style:italic;
 }
+figure.shot{margin:0 0 14px}
+figure.shot img{
+  width:100%;display:block;border:1px solid var(--line);
+  aspect-ratio:4/3;object-fit:contain;padding:6px;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0/100% 12px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/12px 100%,
+    var(--paper2);
+  background-blend-mode:normal;
+}
+figure.shot figcaption{
+  font-family:var(--mono);font-size:8.5px;color:#93A2B5;line-height:1.5;
+  padding:5px 0 0;letter-spacing:.02em;
+}
 figure.photo{margin:0 0 18px}
 figure.photo img{
   width:100%;display:block;border:1px solid var(--line);
