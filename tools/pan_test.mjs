@@ -3,7 +3,8 @@
 // path a person does. Usage: node tools/pan_test.mjs [port]
 import puppeteer from 'puppeteer-core';
 
-const PORT = process.argv[2] || 8812;
+const ARG = process.argv[2] || '8812';
+const URL = /^https?:/.test(ARG) ? ARG : `http://127.0.0.1:${ARG}/`;
 const browser = await puppeteer.launch({
   executablePath: '/usr/bin/chromium', headless: 'shell',
   args: ['--no-sandbox', '--disable-dev-shm-usage', '--use-gl=swiftshader', '--enable-unsafe-swiftshader']
@@ -11,7 +12,7 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage();
 await page.setViewport({ width: 1280, height: 820, deviceScaleFactor: 1 });
 page.on('pageerror', (e) => console.log('PAGEERR', e.message));
-await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'domcontentloaded' });
+await page.goto(URL, { waitUntil: 'domcontentloaded' });
 await new Promise((r) => setTimeout(r, 4000));
 
 const state = () => page.evaluate(() => {
