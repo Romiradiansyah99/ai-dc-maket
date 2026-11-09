@@ -147,17 +147,28 @@ for (const y of [
   yardLabels.push(o);
 }
 
-// Shaft labels: a riser is useless if nobody can find the shaft.
+// Shaft labels: plain room labels, sitting at the base of the shaft rather than
+// floating at mid height. A boxed label in the middle of the model is an obstruction,
+// not a label.
 const shaftLabels = [];
 for (const r of RISERS) {
   const d = document.createElement('div');
-  d.className = 'lbl lbl-shaft';
-  d.textContent = r.name;
+  d.className = 'lbl lbl-room';
+  d.textContent = r.short || r.name;
   const o = new CSS2DObject(d);
-  o.position.set(r.x, LEVELS[1].y + 1.1, r.z);
+  o.position.set(r.x, 1.05, r.z);
   scene.add(o);
   shaftLabels.push(o);
 }
+
+// Shaft names are context, not signage. They appear once the camera is close enough
+// for them to sit on their own shaft instead of piling up in the middle of the view.
+function updateShaftLabels() {
+  const g = site.root.getObjectByName('risers');
+  const show = !!g && g.visible && nav.zoom >= 0.9;
+  shaftLabels.forEach((o) => { o.visible = show; });
+}
+nav.onChange = updateShaftLabels;
 
 const focusLabel = document.createElement('div');
 focusLabel.className = 'lbl lbl-eq';
@@ -320,8 +331,7 @@ function applyDisplay() {
     o.visible = lvl !== 'ALL' && o.userData.level === lvl;
   });
   yardLabels.forEach((o) => { o.visible = lvl === 'L0'; });
-  const risersGroup = site.root.getObjectByName('risers');
-  shaftLabels.forEach((o) => { o.visible = !!risersGroup && risersGroup.visible; });
+  updateShaftLabels();
   document.querySelectorAll('#levels button').forEach((b) => {
     b.classList.toggle('on', b.dataset.level === lvl);
   });

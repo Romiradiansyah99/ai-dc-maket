@@ -74,11 +74,11 @@ export const R = {
 };
 
 export const RISERS = [
-  { id: 'lv', name: 'LV Busduct Riser', x: R.lv[0], z: R.lv[1], from: 0, to: 18, kind: 'busway' },
-  { id: 'chw', name: 'Chilled Water Riser', x: R.chw[0], z: R.chw[1], from: 0, to: 18, kind: 'pipe' },
-  { id: 'fire', name: 'Fire Riser', x: R.fire[0], z: R.fire[1], from: 0, to: 18, kind: 'pipe' },
-  { id: 'fiber', name: 'Fiber & Comms Riser', x: R.fiber[0], z: R.fiber[1], from: 0, to: 18, kind: 'tray' },
-  { id: 'lift', name: 'Goods & Passenger Lift', x: R.lift[0], z: R.lift[1], from: 0, to: 18, kind: 'lift' }
+  { id: 'lv', name: 'LV Busduct Riser', short: 'LV busduct', x: R.lv[0], z: R.lv[1], from: 0, to: 18, kind: 'busway' },
+  { id: 'chw', name: 'Chilled Water Riser', short: 'Chilled water', x: R.chw[0], z: R.chw[1], from: 0, to: 18, kind: 'pipe' },
+  { id: 'fire', name: 'Fire Riser', short: 'Fire main', x: R.fire[0], z: R.fire[1], from: 0, to: 18, kind: 'pipe' },
+  { id: 'fiber', name: 'Fiber & Comms Riser', short: 'Fiber & comms', x: R.fiber[0], z: R.fiber[1], from: 0, to: 18, kind: 'tray' },
+  { id: 'lift', name: 'Goods & Passenger Lift', short: 'Goods lift', x: R.lift[0], z: R.lift[1], from: 0, to: 18, kind: 'lift' }
 ];
 
 // Buried services. Negative Y is below finished floor level, which is grade.
